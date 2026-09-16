@@ -4,7 +4,8 @@
 const PRIOR_AUTH_API_URL = 'https://provider.healthybluenc.com/api/prior-auth-lookup';
  
 // Local mock fixture, shipped alongside the block for dev/preview use.
-const MOCK_DATA_URL = '/blocks/prior-auth-lookup/mock-data.json';
+const MOCK_SUGGESTION_DATA_URL = '/blocks/provider-lookup/mock-suggestion-data.json';
+const MOCK_SEARCH_DATA_URL = '/blocks/provider-lookup/mock-search-data.json';
 
 /**
  * Decide whether this session should hit the mock fixture instead of the
@@ -13,13 +14,14 @@ const MOCK_DATA_URL = '/blocks/prior-auth-lookup/mock-data.json';
  * path from any environment (e.g. demoing the empty/error state in prod).
  */
 function useMock() {
-    const { hostname, search } = window.location;
-    const params = new URLSearchParams(search);
-    if (params.get('mock') === '1') return true;
-    if (params.get('mock') === '0') return false;
-    return hostname.endsWith('.hlx.page')
-        || hostname.endsWith('.aem.page')
-        || hostname === 'localhost';
+    // const { hostname, search } = window.location;
+    // const params = new URLSearchParams(search);
+    // if (params.get('mock') === '1') return true;
+    // if (params.get('mock') === '0') return false;
+    // return hostname.endsWith('.hlx.page')
+    //     || hostname.endsWith('.aem.page')
+    //     || hostname === 'localhost';
+    return true; // force mock for now until the real API is ready
 }
 
 
@@ -73,6 +75,7 @@ export default async function decorate(block) {
             </div>
         </div>
         <button type="submit" class="search-button" disabled>${searchText || 'Search'}</button>
+        <div class="search-results"></div>
     `;
     block.append(form);
 
@@ -83,17 +86,20 @@ export default async function decorate(block) {
     const lookupHint = form.querySelector('.lookup-hint');
     const resultEl = form.querySelector('.lookup-results');
     const searchButton = form.querySelector('.search-button');
+    const resultSection = block.querySelector('.search-results');
 
     npiInput.addEventListener('input', async (e) => {
         const npi = e.target.value;
         lookupEcho.value = npi;
         searchButton.disabled = npi.trim().length < 3;
+        resultSection.innerHTML = '';
 
         if (!npi) {
             lookupPanel.hidden = true;
             resultEl.innerHTML = '';
             return;
         }
+
         lookupPanel.hidden = false;
 
         if (npi.length < 3) {
@@ -101,78 +107,48 @@ export default async function decorate(block) {
             resultEl.innerHTML = '';
             return;
         }
+
         lookupHint.hidden = true;
+        resultSection.innerHTML = '';
         resultEl.textContent = 'Loading…';
 
         try {
-            const res = `[
-                {
-                    "procedureCode": "0002M",
-                    "description": "Liver disease, ten biochemical assays (ALT, A2-macroglobulin, apolipoprotein A-1, total bilirubin, GGT, haptoglobin, AST, glucose, total cholesterol and triglycerides) utilizing serum, prognostic algorithm reported as quantitative scores for fibrosis, steatosis and alcoholic steatohepatitis (ASH)",
-                    "category": null,
-                    "subcategory": null,
-                    "highDollarMe": null
-                },
-                {
-                    "procedureCode": "0003M",
-                    "description": "Liver disease, ten biochemical assays (ALT, A2-macroglobulin, apolipoprotein A-1, total bilirubin, GGT, haptoglobin, AST, glucose, total cholesterol and triglycerides) utilizing serum, prognostic algorithm reported as quantitative scores for fibrosis, steatosis and nonalcoholic steatohepatitis (NASH)",
-                    "category": null,
-                    "subcategory": null,
-                    "highDollarMe": null
-                },
-                {
-                    "procedureCode": "00702",
-                    "description": "Anesthesia, Proc, Upper Anterior Abdominal Wall; Percutaneous Liver Bx",
-                    "category": null,
-                    "subcategory": null,
-                    "highDollarMe": null
-                },
-                {
-                    "procedureCode": "00792",
-                    "description": "Anesthesia, Upper Abd W/Laparoscopy; Partial Hepatectomy/Mgmt Liver Hemorrhage (W/O Liver Bx)",
-                    "category": null,
-                    "subcategory": null,
-                    "highDollarMe": null
-                },
-                {
-                    "procedureCode": "00796",
-                    "description": "Anesthesia, Intraperitoneal Proc, Upper Abdomen, W/Laparoscopy; Liver Transplant, Recipient",
-                    "category": null,
-                    "subcategory": null,
-                    "highDollarMe": null
-                }
-            ]`;
-            
-            // Convert the string to a JSON object
-            const data = JSON.parse(res);
+            if (useMock()) {
+                const mockRes = await fetch(MOCK_SUGGESTION_DATA_URL);
+                if (!mockRes.ok) throw new Error(`Mock fixture failed to load: ${mockRes.status}`);
 
-            // Traverse the data object to find the procedureCode
-            //const procedureCode = data?.procedureCode ?? 'Not found';
-            if (data && data.length > 0) {
-                // Extract "procedureCode" and "description" from each item in the data array
-                const results = data.map(item => {
-                    const procedureCode = item?.procedureCode ?? 'Not found';
-                    const description = item?.description ?? 'No description';
-                    return `${procedureCode}: ${description}`;
-                });
-                
-                // Build selectable rows for each result, and add a click event listener to each row to re-populate the npi input field with the selected procedureCode
-                resultEl.innerHTML = results.map(result => `<div class="result-row">${result}</div>`).join('');
-                const resultRows = resultEl.querySelectorAll('.result-row');
-                resultRows.forEach(row => {
-                    row.addEventListener('click', () => {
-                        npiInput.value = row.textContent.split(':')[0].trim() + ' ' + row.textContent.split(':')[1].trim(); // populate npi input field with selected procedureCode
-                        lookupEcho.value = npiInput.value;
-                        lookupPanel.hidden = true;
-                        resultEl.innerHTML = '';
+                const data = await mockRes.json();
+
+                if (Array.isArray(data) && data.length > 0) {
+                    const results = data.map((item) => {
+                        const procedureCode = item?.procedureCode ?? 'Not found';
+                        const description = item?.description ?? 'No description';
+                        return `${procedureCode}: ${description}`;
                     });
-                });
+
+                    resultEl.innerHTML = results.map((result) => `<div class="result-row">${result}</div>`).join('');
+                    const resultRows = resultEl.querySelectorAll('.result-row');
+                    resultRows.forEach((row) => {
+                        row.addEventListener('click', () => {
+                            const [code, ...rest] = row.textContent.split(':');
+                            npiInput.value = `${code.trim()} ${rest.join(':').trim()}`;
+                            lookupEcho.value = npiInput.value;
+                            lookupPanel.hidden = true;
+                            resultEl.innerHTML = '';
+                            resultSection.innerHTML = '';
+                        });
+                    });
+                } else {
+                    resultSection.innerHTML = '';
+                    resultEl.textContent = 'No results found.';
+                }
             } else {
+                resultSection.innerHTML = '';
                 resultEl.textContent = 'No results found.';
             }
-
         } catch (err) {
             console.error('Provider lookup failed:', err);
+            resultSection.innerHTML = '';
             resultEl.textContent = 'Something went wrong. Please try again.';
         }
     });
@@ -181,18 +157,131 @@ export default async function decorate(block) {
         e.preventDefault();
         const npi = form.npi.value;
         lookupPanel.hidden = false;
-        lookupHint.hidden = true;
+        lookupHint.hidden = true
+        resultSection.innerHTML = '';
         resultEl.textContent = 'Loading…';
 
         try {
-        const res = await fetch(`https://provider.healthybluenc.com/sites/Satellite?d=Universal&pagename=gbdPro/PlutoServiceProxy&service=submit&state=NC&lobCode=CFSP&procCode=0002M`);
-        if (!res.ok) {
-            throw new Error(`Request failed: ${res.status}`);
-        }
-            const data = await res.json();
-            resultEl.textContent = data.providerName ?? 'Not found';
+            if (useMock()) {
+                const mockRes = await fetch(MOCK_SEARCH_DATA_URL);
+                if (!mockRes.ok) throw new Error(`Mock fixture failed to load: ${mockRes.status}`);
+
+                const data = await mockRes.json();
+
+                if (Array.isArray(data) && data.length > 0) {
+                    
+                    resultEl.innerHTML = '';
+
+                    resultSection.innerHTML = data.map((item) => {
+                        const procedureCode = item?.procedureCode ?? 'Not found';
+                        const description = item?.procedureCodeDescription ?? 'None';
+                        const policy = item?.precertCodeGuideList?.policy ?? 'None';
+                        const cmsGuideLine = item?.precertCodeGuideList?.cmsGuideLine ?? 'None';
+                        const lobSelect = form.lob;
+                        const lobText = lobSelect.options[lobSelect.selectedIndex].text;
+
+                        return `
+                            <article>
+                                <h3> NO - Precertification is not required </h3>
+                                    <div class="row">
+                                        <div>
+                                            <label aria-label="line of business">
+                                                Line of Business:
+                                            </label>
+                                        </div>
+                                        <div>
+                                            ${lobText}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div>
+                                            <label aria-label="procedure code">
+                                                CPT/HCPCS Code:
+                                            </label>
+                                        </div>
+                                        <div>
+                                            ${procedureCode}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div>
+                                            <label aria-label="Procedure Code description">
+                                                Description:
+                                            </label>
+                                        </div>
+                                        <div>
+                                            ${description}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div>
+                                            <label aria-label="policy guideline">
+                                                Policy/Clinical Guideline:
+                                            </label>
+                                        </div>
+                                        <div>
+                                            ${policy}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div>
+                                            <label aria-label="cms GuideLine">
+                                                CMS Guideline:
+                                            </label>
+                                        </div>
+                                        <div>
+                                            ${cmsGuideLine}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div>
+                                            <label aria-label="state GuideLine">
+                                                State Guideline:
+                                            </label>
+                                        </div>
+                                        <div>
+                                            None
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div>
+                                            <label aria-label="inter Qual GuideLine">
+                                                Third Party Guidelines:
+                                            </label>
+                                        </div>
+                                        <div>
+                                            None
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div>
+                                            <label aria-label="carelon rx clinical criteria">
+                                                Carelon RX Criteria:
+                                            </label>
+                                        </div>
+                                        <div>
+                                            <p class="carelonrx">
+                                                <a aria-label="carelon rx clinical criteria" class="external_link" tabindex="0" target="_blank" href="https://www.anthem.com/ms/pharmacyinformation/clinicalcriteria.html">
+                                                    Clinical Criteria (anthem.com)
+                                                </a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </article>
+                            `;
+                    }).join('');
+                    
+                } else {
+                    resultSection.innerHTML = '';
+                    resultEl.textContent = 'No results found.';
+                }
+            } else{
+                resultSection.innerHTML = '';
+                resultEl.textContent = 'No results found.';
+            }
         } catch (err) {
             console.error('Provider lookup failed:', err);
+            resultSection.innerHTML = '';
             resultEl.textContent = 'Something went wrong. Please try again.';
         }
     });
