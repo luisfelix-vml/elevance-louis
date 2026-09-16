@@ -1,8 +1,8 @@
 // ---- Configuration ---------------------------------------------------------
- 
+
 // Real endpoint — replace with the actual proxy/Edge Function URL once known.
 const PRIOR_AUTH_API_URL = 'https://provider.healthybluenc.com/api/prior-auth-lookup';
- 
+
 // Local mock fixture, shipped alongside the block for dev/preview use.
 const MOCK_SUGGESTION_DATA_URL = '/blocks/provider-lookup/mock-suggestion-data.json';
 const MOCK_SEARCH_DATA_URL = '/blocks/provider-lookup/mock-search-data.json';
@@ -44,11 +44,11 @@ export default async function decorate(block) {
 
 
     block.innerHTML = '';
-    const form = document.createElement('div');
-    form.className = 'provider-lookup-container';
+    const formWrapper = document.createElement('div');
+    formWrapper.className = 'provider-lookup-wrapper';
     // Build form with 2 dropdowns for market and lob, a typeahead input for the
     // procedure/drug lookup, and a submit button
-    form.innerHTML = `
+    formWrapper.innerHTML = `
         <form class="provider-lookup-form">
             <div class="form-row">
                 <label for="market">${marketText}</label>
@@ -79,15 +79,15 @@ export default async function decorate(block) {
         </form>
         <div class="search-results"></div>
     `;
-    block.append(form);
+    block.append(formWrapper);
 
     // add event listener to form for api call to input text field and display result in a div below the form for each character typed in the input field
-    const npiInput = form.npi;
-    const lookupPanel = form.querySelector('.lookup-panel');
-    const lookupEcho = form.querySelector('.lookup-panel-echo');
-    const lookupHint = form.querySelector('.lookup-hint');
-    const resultEl = form.querySelector('.lookup-results');
-    const searchButton = form.querySelector('.search-button');
+    const npiInput = formWrapper.querySelector('#npi');
+    const lookupPanel = formWrapper.querySelector('.lookup-panel');
+    const lookupEcho = formWrapper.querySelector('.lookup-panel-echo');
+    const lookupHint = formWrapper.querySelector('.lookup-hint');
+    const resultEl = formWrapper.querySelector('.lookup-results');
+    const searchButton = formWrapper.querySelector('.search-button');
     const resultSection = block.querySelector('.search-results');
 
     npiInput.addEventListener('input', async (e) => {
@@ -155,9 +155,8 @@ export default async function decorate(block) {
         }
     });
 
-    form.addEventListener('submit', async (e) => {
+    searchButton.addEventListener('click', async (e) => {
         e.preventDefault();
-        const npi = form.npi.value;
         lookupPanel.hidden = false;
         lookupHint.hidden = true
         resultSection.innerHTML = '';
@@ -181,7 +180,7 @@ export default async function decorate(block) {
                         const cmsGuideLine = item?.cmsGuideLine ?? 'None';
                         const stateGuideLine = item?.stateGuideLine ?? 'None';
                         const thirdPartyGuideLine = item?.precertCodeGuideList?.[0]?.interQualSubset ?? 'None';
-                        const lobSelect = form.lob;
+                        const lobSelect = formWrapper.querySelector('#lob');
                         const lobText = lobSelect.options[lobSelect.selectedIndex].text;
 
                         return `

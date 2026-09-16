@@ -1,7 +1,8 @@
-.provider-lookup-container {
-  display: flex;
-  flex-direction: column;
+.provider-lookup-wrapper {
+  margin: initial;
+  margin-top: 24px;
 }
+
 .provider-lookup-form {
   max-width: 480px;
 }
@@ -121,6 +122,7 @@
   padding: 24px;
   background-color: #EEEEEE;
   border-radius: 4px;
+  margin-top: 59px;
 }
 
 .provider-lookup-container .result-card h3 {
