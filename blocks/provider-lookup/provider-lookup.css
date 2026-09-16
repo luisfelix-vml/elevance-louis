@@ -1,0 +1,112 @@
+.provider-lookup-form {
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+}
+
+.provider-lookup-form .form-row {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.provider-lookup-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: var(--dark-color, var(--text-color));
+}
+
+.provider-lookup-form input[type="text"],
+.provider-lookup-form select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--brand-border);
+  border-radius: 4px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-size: var(--body-font-size-s);
+}
+
+.provider-lookup-form input[type="text"]:focus,
+.provider-lookup-form select:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 1px var(--brand-blue);
+}
+
+.provider-lookup-form .select-wrap {
+  position: relative;
+}
+
+.provider-lookup-form .select-wrap::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid var(--dark-color, var(--text-color));
+  border-bottom: 2px solid var(--dark-color, var(--text-color));
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.provider-lookup-form select {
+  appearance: none;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+.provider-lookup-form .lookup-panel {
+  margin-top: 10px;
+  border: 1px solid var(--brand-blue);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 0 0 3px rgb(1 107 149 / 12%);
+}
+
+.provider-lookup-form .lookup-panel[hidden] {
+  display: none;
+}
+
+.provider-lookup-form .lookup-panel-echo {
+  border: none;
+  border-bottom: 1px solid var(--brand-border);
+  border-radius: 0;
+}
+
+.provider-lookup-form .lookup-panel-echo:focus {
+  box-shadow: none;
+}
+
+.provider-lookup-form .lookup-hint {
+  margin: 0;
+  padding: 12px;
+  background-color: var(--light-color);
+  color: var(--text-color);
+  font-size: var(--body-font-size-xs);
+}
+
+.provider-lookup-form .lookup-hint[hidden] {
+  display: none;
+}
+
+.provider-lookup-form .lookup-results:not(:empty) {
+  padding: 4px 0;
+}
+
+.provider-lookup-form .lookup-results .result-row {
+  padding: 10px 12px;
+  font-size: var(--body-font-size-xs);
+  cursor: pointer;
+}
+
+.provider-lookup-form .lookup-results .result-row:hover {
+  background-color: var(--light-color);
+}
+
+.provider-lookup-form .search-button {
+  width: 100%;
+  margin: 4px 0 0;
+}

@@ -1,82 +1,107 @@
+// ---- Configuration ---------------------------------------------------------
+ 
+// Real endpoint — replace with the actual proxy/Edge Function URL once known.
+const PRIOR_AUTH_API_URL = 'https://provider.healthybluenc.com/api/prior-auth-lookup';
+ 
+// Local mock fixture, shipped alongside the block for dev/preview use.
+const MOCK_DATA_URL = '/blocks/prior-auth-lookup/mock-data.json';
+
+/**
+ * Decide whether this session should hit the mock fixture instead of the
+ * real API. Adjust the hostname patterns once the real preview/prod domains
+ * are confirmed. The ?mock=1 / ?mock=0 override is handy for testing either
+ * path from any environment (e.g. demoing the empty/error state in prod).
+ */
+function useMock() {
+    const { hostname, search } = window.location;
+    const params = new URLSearchParams(search);
+    if (params.get('mock') === '1') return true;
+    if (params.get('mock') === '0') return false;
+    return hostname.endsWith('.hlx.page')
+        || hostname.endsWith('.aem.page')
+        || hostname === 'localhost';
+}
+
+
 // blocks/provider-lookup/provider-lookup.js
 export default async function decorate(block) {
   // block is the div EDS already built from your authored table —
   // each authored row is a child div, each cell a nested div
     const rows = [...block.children];
-    const marketRow = rows[0];
-    const lobRow = rows[1];
-    const nameRow = rows[2];
-    const searchRow = rows[3];
+    const [marketRow, lobRow, nameRow, searchRow] = rows;
 
-    let marketText = '';
-    let marketValueText = '';
-    let lobText = '';
-    let lobListItems = [];
-    let nameText = '';
-    let instructionsText = '';
-    let searchText = '';   
+    const cellText = (row, index) => row?.children[index]?.querySelector('p')?.textContent?.trim() || '';
 
-
-    if (marketRow) {
-        const marketTitle = marketRow.firstElementChild;
-        marketText = marketTitle.querySelector('p')?.textContent?.trim() || '';
-
-        const marketValue = marketRow.children[1];
-        marketValueText = marketValue.querySelector('p')?.textContent?.trim() || '';
-    }
-
-    if (lobRow) {
-        const lobTitle = lobRow.firstElementChild;
-        lobText = lobTitle.querySelector('p')?.textContent?.trim() || '';
-    
-        const lobList= lobRow.children[1];
-        lobListItems = [...lobList.querySelectorAll('li')].map(li => li.textContent?.trim() || '');
-    }
-
-    if (nameRow) {
-        const nameTitle = nameRow.firstElementChild;
-        nameText = nameTitle.querySelector('p')?.textContent?.trim() || '';
-
-        const instructionsRow = nameRow.children[1];
-        instructionsText = instructionsRow.querySelector('p')?.textContent?.trim() || '';
-    }
-
-    if (searchRow) {
-        const searchTitle = searchRow.firstElementChild;
-        searchText = searchTitle.querySelector('p')?.textContent?.trim() || '';
-    }
+    const marketText = cellText(marketRow, 0);
+    const marketValueText = cellText(marketRow, 1);
+    const lobText = cellText(lobRow, 0);
+    const lobListItems = [...lobRow?.children[1]?.querySelectorAll('li') ?? []].map((li) => li.textContent?.trim() || '');
+    const nameText = cellText(nameRow, 0);
+    const instructionsText = cellText(nameRow, 1);
+    const searchText = cellText(searchRow, 0);
 
 
     block.innerHTML = '';
     const form = document.createElement('form');
-    // Build for with 2 dropdowns for market and lob, input for npi, and submit button
+    form.className = 'provider-lookup-form';
+    // Build form with 2 dropdowns for market and lob, a typeahead input for the
+    // procedure/drug lookup, and a submit button
     form.innerHTML = `
-        <label for="market">${marketText}:</label>
-        <select name="market" id="market">
-            ${marketValueText ? `<option value="${marketValueText}">${marketValueText}</option>` : ''}
-        </select>
-        <label for="lob">${lobText}:</label>
-        <select name="lob" id="lob">
-            ${lobListItems.length ? lobListItems.map(item => `<option value="${item}">${item}</option>`).join('') : ''}
-        </select>
-        <label for="npi">${nameText}:</label>
-        <input type="text" name="npi" id="npi" placeholder="${instructionsText}" required>
-        <button type="submit">${searchText || 'Search'}</button>
+        <div class="form-row">
+            <label for="market">${marketText}</label>
+            <div class="select-wrap">
+                <select name="market" id="market">
+                    ${marketValueText ? `<option value="${marketValueText}">${marketValueText}</option>` : ''}
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <label for="lob">${lobText}</label>
+            <div class="select-wrap">
+                <select name="lob" id="lob">
+                    ${lobListItems.map((item) => `<option value="${item}">${item}</option>`).join('')}
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <label for="npi">${nameText}</label>
+            <input type="text" name="npi" id="npi" placeholder="${instructionsText}" autocomplete="off" required>
+            <div class="lookup-panel" hidden>
+                <input type="text" class="lookup-panel-echo" tabindex="-1" readonly>
+                <p class="lookup-hint">Please enter 3 or more characters.</p>
+                <div class="lookup-results"></div>
+            </div>
+        </div>
+        <button type="submit" class="search-button" disabled>${searchText || 'Search'}</button>
     `;
     block.append(form);
 
     // add event listener to form for api call to input text field and display result in a div below the form for each character typed in the input field
     const npiInput = form.npi;
-    const resultEl = document.createElement('div');
-    resultEl.className = 'result';
-    form.append(resultEl);
+    const lookupPanel = form.querySelector('.lookup-panel');
+    const lookupEcho = form.querySelector('.lookup-panel-echo');
+    const lookupHint = form.querySelector('.lookup-hint');
+    const resultEl = form.querySelector('.lookup-results');
+    const searchButton = form.querySelector('.search-button');
 
     npiInput.addEventListener('input', async (e) => {
         const npi = e.target.value;
-        if (npi.length > 3) {
-            resultEl.textContent = '';
+        lookupEcho.value = npi;
+        searchButton.disabled = npi.trim().length < 3;
+
+        if (!npi) {
+            lookupPanel.hidden = true;
+            resultEl.innerHTML = '';
             return;
         }
+        lookupPanel.hidden = false;
+
+        if (npi.length < 3) {
+            lookupHint.hidden = false;
+            resultEl.innerHTML = '';
+            return;
+        }
+        lookupHint.hidden = true;
         resultEl.textContent = 'Loading…';
 
         try {
@@ -136,7 +161,9 @@ export default async function decorate(block) {
                 const resultRows = resultEl.querySelectorAll('.result-row');
                 resultRows.forEach(row => {
                     row.addEventListener('click', () => {
-                        npiInput.value = row.textContent.split(':')[0].trim();
+                        npiInput.value = row.textContent.split(':')[0].trim() + ' ' + row.textContent.split(':')[1].trim(); // populate npi input field with selected procedureCode
+                        lookupEcho.value = npiInput.value;
+                        lookupPanel.hidden = true;
                         resultEl.innerHTML = '';
                     });
                 });
@@ -153,7 +180,8 @@ export default async function decorate(block) {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const npi = form.npi.value;
-        const resultEl = form.querySelector('.result');
+        lookupPanel.hidden = false;
+        lookupHint.hidden = true;
         resultEl.textContent = 'Loading…';
 
         try {
