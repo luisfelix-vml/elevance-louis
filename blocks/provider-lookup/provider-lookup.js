@@ -8,73 +8,80 @@ export default async function decorate(block) {
     const nameRow = rows[2];
     const searchRow = rows[3];
 
-    if (marketRow) {
-        //get first child of marketRow
-        const marketTitle = marketRow.firstElementChild;
-        // get p element and take its text content 
-        const marketText = marketTitle.querySelector('p')?.textContent?.trim() || '';
-        console.log('marketText:', marketText);
+    let marketText = '';
+    let marketValueText = '';
+    let lobText = '';
+    let lobListItems = [];
+    let nameText = '';
+    let instructionsText = '';
+    let searchText = '';   
 
-        // get second child of marketRow 
+
+    if (marketRow) {
+        const marketTitle = marketRow.firstElementChild;
+        marketText = marketTitle.querySelector('p')?.textContent?.trim() || '';
+
         const marketValue = marketRow.children[1];
-        // get p element and take its text content 
-        const marketValueText = marketValue.querySelector('p')?.textContent?.trim() || '';
-        console.log('marketValueText:', marketValueText);
+        marketValueText = marketValue.querySelector('p')?.textContent?.trim() || '';
     }
 
     if (lobRow) {
         const lobTitle = lobRow.firstElementChild;
-        const lobText = lobTitle.querySelector('p')?.textContent?.trim() || '';
-        console.log('lobText:', lobText);
-
+        lobText = lobTitle.querySelector('p')?.textContent?.trim() || '';
+    
         const lobList= lobRow.children[1];
-        const lobListItems = [...lobList.querySelectorAll('li')].map(li => li.textContent?.trim() || '');
-        console.log('lobListItems:', lobListItems);
+        lobListItems = [...lobList.querySelectorAll('li')].map(li => li.textContent?.trim() || '');
     }
 
     if (nameRow) {
         const nameTitle = nameRow.firstElementChild;
-        const nameText = nameTitle.querySelector('p')?.textContent?.trim() || '';
-        console.log('nameText:', nameText);
+        nameText = nameTitle.querySelector('p')?.textContent?.trim() || '';
 
         const instructionsRow = nameRow.children[1];
-        const instructionsText = instructionsRow.querySelector('p')?.textContent?.trim() || '';
-        console.log('instructionsText:', instructionsText);
+        instructionsText = instructionsRow.querySelector('p')?.textContent?.trim() || '';
     }
 
     if (searchRow) {
         const searchTitle = searchRow.firstElementChild;
-        const searchText = searchTitle.querySelector('p')?.textContent?.trim() || '';
-        console.log('searchText:', searchText);
+        searchText = searchTitle.querySelector('p')?.textContent?.trim() || '';
     }
 
 
+    block.innerHTML = '';
+    const form = document.createElement('form');
+    // Build for with 2 dropdowns for market and lob, input for npi, and submit button
+    form.innerHTML = `
+        <label for="market">${marketText}:</label>
+        <select name="market" id="market">
+            ${marketValueText ? `<option value="${marketValueText}">${marketValueText}</option>` : ''}
+        </select>
+        <label for="lob">${lobText}:</label>
+        <select name="lob" id="lob">
+            ${lobListItems.length ? lobListItems.map(item => `<option value="${item}">${item}</option>`).join('') : ''}
+        </select>
+        <label for="npi">${nameText}:</label>
+        <input type="text" name="npi" id="npi" placeholder="${instructionsText}" required>
 
-//   const inputLabel = rows[0]?.textContent?.trim() || 'Enter NPI';
+        <button type="submit">${searchText || 'Search'}</button>
+    `;
+    block.append(form);
 
-//   block.innerHTML = '';
-//   const form = document.createElement('form');
-//   form.innerHTML = `
-//     <label>${inputLabel}</label>
-//     <input type="text" name="npi" required />
-//     <button type="submit">Look up</button>
-//     <div class="result"></div>
-//   `;
-//   block.append(form);
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const npi = form.npi.value;
+        const resultEl = form.querySelector('.result');
+        resultEl.textContent = 'Loading…';
 
-//   form.addEventListener('submit', async (e) => {
-//     e.preventDefault();
-//     const npi = form.npi.value;
-//     const resultEl = form.querySelector('.result');
-//     resultEl.textContent = 'Loading…';
-
-//     try {
-//       const res = await fetch(`/api/provider-lookup?npi=${encodeURIComponent(npi)}`);
-//       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-//       const data = await res.json();
-//       resultEl.textContent = data.providerName ?? 'Not found';
-//     } catch (err) {
-//       resultEl.textContent = 'Something went wrong. Please try again.';
-//     }
-//  });
+        try {
+        const res = await fetch(`/api/provider-lookup?npi=${encodeURIComponent(npi)}`);
+        if (!res.ok) {
+            throw new Error(`Request failed: ${res.status}`);
+        }
+            const data = await res.json();
+            resultEl.textContent = data.providerName ?? 'Not found';
+        } catch (err) {
+            console.error('Provider lookup failed:', err);
+            resultEl.textContent = 'Something went wrong. Please try again.';
+        }
+    });
 }
