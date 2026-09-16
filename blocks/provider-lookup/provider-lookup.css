@@ -110,3 +110,64 @@
   width: 100%;
   margin: 4px 0 0;
 }
+
+.provider-lookup-form .search-results:not(:empty) {
+  margin-top: 24px;
+}
+
+.provider-lookup-form .result-card {
+  padding: 24px;
+  background-color: var(--light-color);
+  border-radius: 4px;
+}
+
+.provider-lookup-form .result-card h3 {
+  position: relative;
+  margin: 0 0 20px;
+  padding-bottom: 14px;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--dark-color, var(--text-color));
+}
+
+.provider-lookup-form .result-card h3::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 40px;
+  height: 3px;
+  background-color: var(--brand-blue);
+}
+
+.provider-lookup-form .result-card .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  padding: 10px 0;
+}
+
+.provider-lookup-form .result-card .row > div:first-child {
+  flex: 0 0 220px;
+}
+
+.provider-lookup-form .result-card .row > div:last-child {
+  flex: 1 1 240px;
+  min-width: 0;
+  color: var(--text-color);
+}
+
+.provider-lookup-form .result-card label {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.provider-lookup-form .result-card .carelonrx {
+  margin: 0;
+}
+
+.provider-lookup-form .result-card .external_link {
+  color: var(--link-color);
+  text-decoration: underline;
+}

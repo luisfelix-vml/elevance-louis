@@ -175,14 +175,16 @@ export default async function decorate(block) {
                     resultSection.innerHTML = data.map((item) => {
                         const procedureCode = item?.procedureCode ?? 'Not found';
                         const description = item?.procedureCodeDescription ?? 'None';
-                        const policy = item?.precertCodeGuideList?.policy ?? 'None';
-                        const cmsGuideLine = item?.precertCodeGuideList?.cmsGuideLine ?? 'None';
+                        const policy = item?.precertCodeGuideList?.[0]?.policy ?? 'None';
+                        const cmsGuideLine = item?.cmsGuideLine ?? 'None';
+                        const stateGuideLine = item?.stateGuideLine ?? 'None';
+                        const thirdPartyGuideLine = item?.precertCodeGuideList?.[0]?.interQualSubset ?? 'None';
                         const lobSelect = form.lob;
                         const lobText = lobSelect.options[lobSelect.selectedIndex].text;
 
                         return `
-                            <article>
-                                <h3> NO - Precertification is not required </h3>
+                            <article class="result-card">
+                                <h3>NO - Precertification is not required</h3>
                                     <div class="row">
                                         <div>
                                             <label aria-label="line of business">
@@ -240,7 +242,7 @@ export default async function decorate(block) {
                                             </label>
                                         </div>
                                         <div>
-                                            None
+                                            ${stateGuideLine}
                                         </div>
                                     </div>
                                     <div class="row">
@@ -250,7 +252,7 @@ export default async function decorate(block) {
                                             </label>
                                         </div>
                                         <div>
-                                            None
+                                            ${thirdPartyGuideLine}
                                         </div>
                                     </div>
                                     <div class="row">
