@@ -61,10 +61,58 @@ export default async function decorate(block) {
         </select>
         <label for="npi">${nameText}:</label>
         <input type="text" name="npi" id="npi" placeholder="${instructionsText}" required>
-
         <button type="submit">${searchText || 'Search'}</button>
     `;
     block.append(form);
+
+    // add event listener to form for api call to input text field and display result in a div below the form for each character typed in the input field
+    const npiInput = form.npi;
+    const resultEl = document.createElement('div');
+    resultEl.className = 'result';
+    form.append(resultEl);
+
+    npiInput.addEventListener('input', async (e) => {
+        const npi = e.target.value;
+        if (npi.length > 3) {
+            resultEl.textContent = '';
+            return;
+        }
+        resultEl.textContent = 'Loading…';
+
+        try {
+            const res = await fetch(`https://provider.healthybluenc.com/sites/Satellite?d=Universal&pagename=gbdPro/PlutoServiceProxy&service=cpt&state=NC&lobCode=CFSP&procCode=%25IVEr%25`);
+            if (!res.ok) {
+                throw new Error(`Request failed: ${res.status}`);
+            }
+            const data = await res.json();
+            // Traverse the data object to find the procedureCode
+            //const procedureCode = data?.procedureCode ?? 'Not found';
+            if (data && data.length > 0) {
+                // Extract "procedureCode" and "description" from each item in the data array
+                const results = data.map(item => {
+                    const procedureCode = item?.procedureCode ?? 'Not found';
+                    const description = item?.description ?? 'No description';
+                    return `${procedureCode}: ${description}`;
+                });
+                
+                // Build selectable rows for each result, and add a click event listener to each row to re-populate the npi input field with the selected procedureCode
+                resultEl.innerHTML = results.map(result => `<div class="result-row">${result}</div>`).join('');
+                const resultRows = resultEl.querySelectorAll('.result-row');
+                resultRows.forEach(row => {
+                    row.addEventListener('click', () => {
+                        npiInput.value = row.textContent.split(':')[0].trim();
+                        resultEl.innerHTML = '';
+                    });
+                });
+            } else {
+                resultEl.textContent = 'No results found.';
+            }
+
+        } catch (err) {
+            console.error('Provider lookup failed:', err);
+            resultEl.textContent = 'Something went wrong. Please try again.';
+        }
+    });
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -73,7 +121,7 @@ export default async function decorate(block) {
         resultEl.textContent = 'Loading…';
 
         try {
-        const res = await fetch(`/api/provider-lookup?npi=${encodeURIComponent(npi)}`);
+        const res = await fetch(`https://provider.healthybluenc.com/sites/Satellite?d=Universal&pagename=gbdPro/PlutoServiceProxy&service=submit&state=NC&lobCode=CFSP&procCode=0002M`);
         if (!res.ok) {
             throw new Error(`Request failed: ${res.status}`);
         }
