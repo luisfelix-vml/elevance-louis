@@ -22,6 +22,34 @@ export default async function decorate(block) {
         console.log('marketValueText:', marketValueText);
     }
 
+    if (lobRow) {
+        const lobTitle = lobRow.firstElementChild;
+        const lobText = lobTitle.querySelector('p')?.textContent?.trim() || '';
+        console.log('lobText:', lobText);
+
+        const lobList= lobRow.children[1];
+        const lobListItems = [...lobList.querySelectorAll('li')].map(li => li.textContent?.trim() || '');
+        console.log('lobListItems:', lobListItems);
+    }
+
+    if (nameRow) {
+        const nameTitle = nameRow.firstElementChild;
+        const nameText = nameTitle.querySelector('p')?.textContent?.trim() || '';
+        console.log('nameText:', nameText);
+
+        const instructionsRow = nameRow.children[1];
+        const instructionsText = instructionsRow.querySelector('p')?.textContent?.trim() || '';
+        console.log('instructionsText:', instructionsText);
+    }
+
+    if (searchRow) {
+        const searchTitle = searchRow.firstElementChild;
+        const searchText = searchTitle.querySelector('p')?.textContent?.trim() || '';
+        console.log('searchText:', searchText);
+    }
+
+
+
 //   const inputLabel = rows[0]?.textContent?.trim() || 'Enter NPI';
 
 //   block.innerHTML = '';
