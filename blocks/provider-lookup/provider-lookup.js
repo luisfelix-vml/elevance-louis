@@ -80,11 +80,47 @@ export default async function decorate(block) {
         resultEl.textContent = 'Loading…';
 
         try {
-            const res = await fetch(`https://provider.healthybluenc.com/sites/Satellite?d=Universal&pagename=gbdPro/PlutoServiceProxy&service=cpt&state=NC&lobCode=CFSP&procCode=%25IVEr%25`);
-            if (!res.ok) {
-                throw new Error(`Request failed: ${res.status}`);
-            }
-            const data = await res.json();
+            const res = `[
+                {
+                    "procedureCode": "0002M",
+                    "description": "Liver disease, ten biochemical assays (ALT, A2-macroglobulin, apolipoprotein A-1, total bilirubin, GGT, haptoglobin, AST, glucose, total cholesterol and triglycerides) utilizing serum, prognostic algorithm reported as quantitative scores for fibrosis, steatosis and alcoholic steatohepatitis (ASH)",
+                    "category": null,
+                    "subcategory": null,
+                    "highDollarMe": null
+                },
+                {
+                    "procedureCode": "0003M",
+                    "description": "Liver disease, ten biochemical assays (ALT, A2-macroglobulin, apolipoprotein A-1, total bilirubin, GGT, haptoglobin, AST, glucose, total cholesterol and triglycerides) utilizing serum, prognostic algorithm reported as quantitative scores for fibrosis, steatosis and nonalcoholic steatohepatitis (NASH)",
+                    "category": null,
+                    "subcategory": null,
+                    "highDollarMe": null
+                },
+                {
+                    "procedureCode": "00702",
+                    "description": "Anesthesia, Proc, Upper Anterior Abdominal Wall; Percutaneous Liver Bx",
+                    "category": null,
+                    "subcategory": null,
+                    "highDollarMe": null
+                },
+                {
+                    "procedureCode": "00792",
+                    "description": "Anesthesia, Upper Abd W/Laparoscopy; Partial Hepatectomy/Mgmt Liver Hemorrhage (W/O Liver Bx)",
+                    "category": null,
+                    "subcategory": null,
+                    "highDollarMe": null
+                },
+                {
+                    "procedureCode": "00796",
+                    "description": "Anesthesia, Intraperitoneal Proc, Upper Abdomen, W/Laparoscopy; Liver Transplant, Recipient",
+                    "category": null,
+                    "subcategory": null,
+                    "highDollarMe": null
+                }
+            ]`;
+            
+            // Convert the string to a JSON object
+            const data = JSON.parse(res);
+
             // Traverse the data object to find the procedureCode
             //const procedureCode = data?.procedureCode ?? 'Not found';
             if (data && data.length > 0) {
