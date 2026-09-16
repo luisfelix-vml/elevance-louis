@@ -44,37 +44,39 @@ export default async function decorate(block) {
 
 
     block.innerHTML = '';
-    const form = document.createElement('form');
-    form.className = 'provider-lookup-form';
+    const form = document.createElement('div');
+    form.className = 'provider-lookup-container';
     // Build form with 2 dropdowns for market and lob, a typeahead input for the
     // procedure/drug lookup, and a submit button
     form.innerHTML = `
-        <div class="form-row">
-            <label for="market">${marketText}</label>
-            <div class="select-wrap">
-                <select name="market" id="market">
-                    ${marketValueText ? `<option value="${marketValueText}">${marketValueText}</option>` : ''}
-                </select>
+        <form class="provider-lookup-form">
+            <div class="form-row">
+                <label for="market">${marketText}</label>
+                <div class="select-wrap">
+                    <select name="market" id="market">
+                        ${marketValueText ? `<option value="${marketValueText}">${marketValueText}</option>` : ''}
+                    </select>
+                </div>
             </div>
-        </div>
-        <div class="form-row">
-            <label for="lob">${lobText}</label>
-            <div class="select-wrap">
-                <select name="lob" id="lob">
-                    ${lobListItems.map((item) => `<option value="${item}">${item}</option>`).join('')}
-                </select>
+            <div class="form-row">
+                <label for="lob">${lobText}</label>
+                <div class="select-wrap">
+                    <select name="lob" id="lob">
+                        ${lobListItems.map((item) => `<option value="${item}">${item}</option>`).join('')}
+                    </select>
+                </div>
             </div>
-        </div>
-        <div class="form-row">
-            <label for="npi">${nameText}</label>
-            <input type="text" name="npi" id="npi" placeholder="${instructionsText}" autocomplete="off" required>
-            <div class="lookup-panel" hidden>
-                <input type="text" class="lookup-panel-echo" tabindex="-1" readonly>
-                <p class="lookup-hint">Please enter 3 or more characters.</p>
-                <div class="lookup-results"></div>
+            <div class="form-row">
+                <label for="npi">${nameText}</label>
+                <input type="text" name="npi" id="npi" placeholder="${instructionsText}" autocomplete="off" required>
+                <div class="lookup-panel" hidden>
+                    <input type="text" class="lookup-panel-echo" tabindex="-1" readonly>
+                    <p class="lookup-hint">Please enter 3 or more characters.</p>
+                    <div class="lookup-results"></div>
+                </div>
             </div>
-        </div>
-        <button type="submit" class="search-button" disabled>${searchText || 'Search'}</button>
+            <button type="submit" class="search-button" disabled>${searchText || 'Search'}</button>
+        </form>
         <div class="search-results"></div>
     `;
     block.append(form);

@@ -1,6 +1,8 @@
-.provider-lookup-form {
+.provider-lookup-container {
   display: flex;
   flex-direction: column;
+}
+.provider-lookup-form {
   max-width: 480px;
 }
 
@@ -115,13 +117,13 @@
   margin-top: 24px;
 }
 
-.provider-lookup-form .result-card {
+.provider-lookup-container .result-card {
   padding: 24px;
-  background-color: var(--light-color);
+  background-color: #EEEEEE;
   border-radius: 4px;
 }
 
-.provider-lookup-form .result-card h3 {
+.provider-lookup-container .result-card h3 {
   position: relative;
   margin: 0 0 20px;
   padding-bottom: 14px;
@@ -130,7 +132,7 @@
   color: var(--dark-color, var(--text-color));
 }
 
-.provider-lookup-form .result-card h3::after {
+.provider-lookup-container .result-card h3::after {
   content: "";
   position: absolute;
   left: 0;
@@ -140,34 +142,34 @@
   background-color: var(--brand-blue);
 }
 
-.provider-lookup-form .result-card .row {
+.provider-lookup-container .result-card .row {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 24px;
   padding: 10px 0;
 }
 
-.provider-lookup-form .result-card .row > div:first-child {
+.provider-lookup-container .result-card .row > div:first-child {
   flex: 0 0 220px;
 }
 
-.provider-lookup-form .result-card .row > div:last-child {
+.provider-lookup-container .result-card .row > div:last-child {
   flex: 1 1 240px;
   min-width: 0;
   color: var(--text-color);
 }
 
-.provider-lookup-form .result-card label {
+.provider-lookup-container .result-card label {
   margin: 0;
   font-weight: 700;
   color: var(--text-color);
 }
 
-.provider-lookup-form .result-card .carelonrx {
+.provider-lookup-container .result-card .carelonrx {
   margin: 0;
 }
 
-.provider-lookup-form .result-card .external_link {
+.provider-lookup-container .result-card .external_link {
   color: var(--link-color);
   text-decoration: underline;
 }
