@@ -1,7 +1,7 @@
 // ---- Configuration ---------------------------------------------------------
 
 // Real endpoint — replace with the actual proxy/Edge Function URL once known.
-const PRIOR_AUTH_API_URL = 'https://provider.healthybluenc.com/api/prior-auth-lookup';
+const PRIOR_AUTH_API_URL = 'https://provider.healthybluenc.com/sites/Satellite';
 
 // Local mock fixture, shipped alongside the block for dev/preview use.
 const MOCK_SUGGESTION_DATA_URL = '/blocks/provider-lookup/mock-suggestion-data.json';
