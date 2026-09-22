@@ -1,282 +1,376 @@
 import {
   fetchMockSuggestionData,
   fetchMockSearchData,
-} from "../../scripts/lookup-service/lookup-service.js";
+} from '../../scripts/lookup-service/lookup-service.js';
 
 // blocks/provider-lookup/provider-lookup.js
+//
+// Renders the source Angular precert widget's markup (ant-*, ps*, uxd-*
+// classes) as a static shell, then wires it up here:
+//   - Market / Line of Business: native radio groups behind a custom
+//     button+popup trigger (keeps keyboard/AT support, styled via CSS)
+//   - Drug name / CPT / HCPCS: a readonly display field that opens an
+//     assistive panel (search-panel) with a live input + typeahead suggestions
+//   - Search: fetches and renders the precertification result card
+let uidCounter = 0;
+
+function renderForm({
+  marketText,
+  marketValueText,
+  lobText,
+  lobListItems,
+  nameText,
+  instructionsText,
+  searchText,
+}) {
+  uidCounter += 1;
+  const uid = uidCounter;
+  const marketGroup = `provider-lookup-market-${uid}`;
+  const lobGroup = `provider-lookup-lob-${uid}`;
+  const nameId = `provider-lookup-name-${uid}`;
+  const codeId = `provider-lookup-code-${uid}`;
+
+  const marketOption = marketValueText
+    ? `<input class="ps-option" type="radio" name="${marketGroup}" id="${marketGroup}-0" value="${marketValueText}" checked>
+       <label class="ps-label" for="${marketGroup}-0">${marketValueText}</label>`
+    : '';
+
+  const lobOptions = lobListItems
+    .map((item, index) => `
+      <input class="ps-option" type="radio" name="${lobGroup}" id="${lobGroup}-${index}" value="${item}" ${index === 0 ? 'checked' : ''}>
+      <label class="ps-label" for="${lobGroup}-${index}">${item}</label>
+    `)
+    .join('');
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'provider-lookup-wrapper';
+  wrapper.innerHTML = `
+    <section class="content_column angular-form-content">
+      <div data-tcp-pluto-cmp="">
+        <label id="${marketGroup}-label">${marketText}</label>
+        <div class="form-item ant-lg-select uxd-btn-ddl" data-uxd-dropdown-cmp="">
+          <fieldset class="ps-select">
+            <legend>${marketText}</legend>
+            <button
+              class="btn-primary ps-button btn"
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-labelledby="${marketGroup}-label"
+            >
+              <span class="ps-active-option">${marketValueText}</span>
+              <span class="ps-arrow" aria-hidden="true"></span>
+            </button>
+            <div class="ps-dropdown" role="listbox" hidden>
+              <span class="sr-only">Use up and down arrow keys to cycle through options. Press enter to select</span>
+              ${marketOption}
+            </div>
+          </fieldset>
+        </div>
+
+        <label id="${lobGroup}-label">${lobText}</label>
+        <div class="ant-lg-select form-item uxd-btn-ddl" data-uxd-dropdown-cmp="">
+          <fieldset class="ps-select">
+            <legend>${lobText}</legend>
+            <button
+              class="btn-primary ps-button btn"
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-labelledby="${lobGroup}-label"
+            >
+              <span class="ps-active-option">${lobListItems[0] || ''}</span>
+              <span class="ps-arrow" aria-hidden="true"></span>
+            </button>
+            <div class="ps-dropdown" role="listbox" hidden>
+              <span class="sr-only">Use up and down arrow keys to cycle through options. Press enter to select</span>
+              ${lobOptions}
+            </div>
+          </fieldset>
+        </div>
+
+        <label for="${nameId}">${nameText}</label>
+        <div class="form-item">
+          <input
+            id="${nameId}"
+            class="ant-text-input ant-input-long"
+            type="text"
+            readonly
+            placeholder="${instructionsText}"
+          >
+        </div>
+
+        <div class="search-panel" hidden>
+          <div class="form-item">
+            <input id="${codeId}" name="codeDescription" type="text" autocomplete="off" placeholder="${instructionsText}">
+          </div>
+          <div class="search-loading" aria-live="polite">Please enter 3 or more characters.</div>
+          <div class="search-suggestions"></div>
+        </div>
+
+        <button class="primary-btn" type="button" disabled>${searchText || 'Search'}</button>
+      </div>
+    </section>
+  `;
+
+  return wrapper;
+}
+
+// Wires a Market/Line-of-Business control: a button that toggles a native
+// radio group in a popup, keeping the group's own keyboard behavior
+// (arrows/space) for free while the button shows the current selection.
+function wireDropdown(root) {
+  const button = root.querySelector('.ps-button');
+  const dropdown = root.querySelector('.ps-dropdown');
+  const activeText = root.querySelector('.ps-active-option');
+  const options = [...dropdown.querySelectorAll('.ps-option')];
+
+  function close() {
+    dropdown.hidden = true;
+    button.setAttribute('aria-expanded', 'false');
+  }
+
+  function open() {
+    if (!options.length) return;
+    dropdown.hidden = false;
+    button.setAttribute('aria-expanded', 'true');
+  }
+
+  button.addEventListener('click', () => {
+    if (dropdown.hidden) open();
+    else close();
+  });
+
+  button.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') close();
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      open();
+      (options.find((option) => option.checked) || options[0])?.focus();
+    }
+  });
+
+  options.forEach((option) => {
+    option.addEventListener('change', () => {
+      activeText.textContent = option.value;
+      close();
+      button.focus();
+    });
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!root.contains(event.target)) close();
+  });
+
+  return {
+    get value() {
+      return options.find((option) => option.checked)?.value || '';
+    },
+  };
+}
+
+// Wires the drug-name field: focusing/clicking the readonly display input
+// opens an assistive panel with a live input; typing 3+ characters fetches
+// and lists suggestions, and choosing one fills both inputs and closes it.
+function wireDrugField(scopeEl, { onInput }) {
+  const displayInput = scopeEl.querySelector('.ant-text-input.ant-input-long');
+  const panel = scopeEl.querySelector('.search-panel');
+  const codeInput = panel.querySelector('input[type="text"]');
+  const statusEl = panel.querySelector('.search-loading');
+  const suggestionsEl = panel.querySelector('.search-suggestions');
+
+  function openPanel() {
+    codeInput.value = displayInput.value;
+    panel.hidden = false;
+    codeInput.focus();
+  }
+
+  function closePanel() {
+    panel.hidden = true;
+  }
+
+  function selectSuggestion(item) {
+    const value = `${item.procedureCode}: ${item.description}`;
+    codeInput.value = value;
+    displayInput.value = value;
+    suggestionsEl.innerHTML = '';
+    closePanel();
+    onInput(value);
+  }
+
+  async function updateSuggestions(query) {
+    if (query.length < 3) {
+      statusEl.hidden = false;
+      statusEl.textContent = 'Please enter 3 or more characters.';
+      suggestionsEl.innerHTML = '';
+      return;
+    }
+
+    statusEl.hidden = false;
+    statusEl.textContent = 'Searching.....';
+    suggestionsEl.innerHTML = '';
+
+    try {
+      const data = await fetchMockSuggestionData();
+      if (!Array.isArray(data) || data.length === 0) {
+        statusEl.textContent = 'No results found.';
+        return;
+      }
+
+      statusEl.hidden = true;
+      suggestionsEl.innerHTML = data
+        .map((item, index) => `
+          <button type="button" class="search-suggestion" data-index="${index}">
+            ${item.procedureCode}: ${item.description}
+          </button>
+        `)
+        .join('');
+      [...suggestionsEl.querySelectorAll('.search-suggestion')].forEach((suggestionButton, index) => {
+        suggestionButton.addEventListener('click', () => selectSuggestion(data[index]));
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Provider lookup suggestion fetch failed:', err);
+      statusEl.hidden = false;
+      statusEl.textContent = 'Something went wrong. Please try again.';
+    }
+  }
+
+  displayInput.addEventListener('focus', openPanel);
+  displayInput.addEventListener('click', openPanel);
+
+  codeInput.addEventListener('input', () => {
+    displayInput.value = codeInput.value;
+    onInput(codeInput.value);
+    updateSuggestions(codeInput.value.trim());
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!scopeEl.contains(event.target)) closePanel();
+  });
+
+  return {
+    get value() {
+      return codeInput.value;
+    },
+  };
+}
+
+function renderResultCard(item, selectedLobText) {
+  const procedureCode = item?.procedureCode ?? 'Not found';
+  const description = item?.procedureCodeDescription ?? 'None';
+  const policy = item?.precertCodeGuideList?.[0]?.policy ?? 'None';
+  const cmsGuideLine = item?.cmsGuideLine ?? 'None';
+  const stateGuideLine = item?.stateGuideLine ?? 'None';
+  const thirdPartyGuideLine = item?.precertCodeGuideList?.[0]?.interQualSubset ?? 'None';
+
+  return `
+    <article class="result-card">
+      <h3>NO - Precertification is not required</h3>
+      <div class="row">
+        <div><label class="result-label">Line of Business:</label></div>
+        <div>${selectedLobText}</div>
+      </div>
+      <div class="row">
+        <div><label class="result-label">CPT/HCPCS Code:</label></div>
+        <div>${procedureCode}</div>
+      </div>
+      <div class="row">
+        <div><label class="result-label">Description:</label></div>
+        <div>${description}</div>
+      </div>
+      <div class="row">
+        <div><label class="result-label">Policy/Clinical Guideline:</label></div>
+        <div>${policy}</div>
+      </div>
+      <div class="row">
+        <div><label class="result-label">CMS Guideline:</label></div>
+        <div>${cmsGuideLine}</div>
+      </div>
+      <div class="row">
+        <div><label class="result-label">State Guideline:</label></div>
+        <div>${stateGuideLine}</div>
+      </div>
+      <div class="row">
+        <div><label class="result-label">Third Party Guidelines:</label></div>
+        <div>${thirdPartyGuideLine}</div>
+      </div>
+      <div class="row">
+        <div><label class="result-label">Carelon RX Criteria:</label></div>
+        <div>
+          <p class="carelonrx">
+            <a class="external-link" target="_blank" rel="noopener" href="https://www.anthem.com/ms/pharmacyinformation/clinicalcriteria.html">
+              Clinical Criteria (anthem.com)
+            </a>
+          </p>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
 export default async function decorate(block) {
-  // block is the div EDS already built from your authored table —
-  // each authored row is a child div, each cell a nested div
   const rows = [...block.children];
   const [marketRow, lobRow, nameRow, searchRow] = rows;
 
-  const cellText = (row, index) =>
-    row?.children[index]?.querySelector("p")?.textContent?.trim() || "";
+  const cellText = (row, index) => row?.children[index]?.querySelector('p')?.textContent?.trim() || '';
 
   const marketText = cellText(marketRow, 0);
   const marketValueText = cellText(marketRow, 1);
   const lobText = cellText(lobRow, 0);
-  const lobListItems = [
-    ...(lobRow?.children[1]?.querySelectorAll("li") ?? []),
-  ].map((li) => li.textContent?.trim() || "");
+  const lobListItems = [...(lobRow?.children[1]?.querySelectorAll('li') ?? [])]
+    .map((li) => li.textContent?.trim() || '');
   const nameText = cellText(nameRow, 0);
   const instructionsText = cellText(nameRow, 1);
   const searchText = cellText(searchRow, 0);
 
-  block.innerHTML = "";
-  const formWrapper = document.createElement("div");
-  formWrapper.className = "provider-lookup-wrapper";
-  // Build form with 2 dropdowns for market and lob, a typeahead input for the
-  // procedure/drug lookup, and a submit button
-  formWrapper.innerHTML = `
-    <section class="content_column angular-form-content">
-        <div data-tcp-pluto-cmp="">
-            <label aria-labelledby="Market">${marketText}</label>
-            <div aria-label="Select the Market" class="form-item ant-lg-select ng-valid uxd-btn-ddl ng-touched ng-dirty" data-uxd-dropdown-cmp="" id="marketSelect" name="marketSelect">
-                <fieldset class="pfSelect">
-                    <span class="sr-only">label:</span>
-                    <legend id="legendmarketSelect"></legend>
-                    <button class="btn-primary psButton btn" tabindex="-1" type="button" id="psButtonmarketSelect">
-                        <span class="psActiveOption" id="psActiveOptionmarketSelect">North Carolina</span>
-                        <span class="psArrow fa fa-caret-down"></span>
-                    </button>
-                    <div class="psDropdown" tabindex="-1" id="psDropdownmarketSelect">
-                        <span class="sr-only">Use up and down arrow keys to cycle through options. Press enter to select</span>
-                        ${marketValueText ? `<input class="psOption focus" type="radio" value="${marketValueText}" checked=""> <label class="psLabel">${marketValueText}</label>` : ""}
-                    </div>
-                </fieldset>
-            </div>
-            <label aria-labelledby="line of business">${lobText}</label>
-            <div aria-label="Select the Line of Business" class="ant-lg-select form-item ng-valid uxd-btn-ddl ng-touched ng-dirty" data-uxd-dropdown-cmp="" id="lobSelect">
-                <fieldset class="pfSelect">
-                    <span class="sr-only">label:</span>
-                    <legend id="legendlobSelect"></legend>
-                    <button class="btn-primary psButton btn" tabindex="-1" type="button" id="psButtonlobSelect">
-                        <span class="psActiveOption" id="psActiveOptionlobSelect">Medicaid/SCHIP/Family Care</span>
-                        <span class="psArrow fa fa-caret-down"></span>
-                    </button>
-                    <div class="psDropdown" tabindex="-1" id="psDropdownlobSelect">
-                        <span class="sr-only">Use up and down arrow keys to cycle through options. Press enter to select</span>
-                        ${lobListItems.map((item) => `
-                            <input class="psOption" type="radio" value="${item}" checked="">
-                            <label class="psLabel">${item}</label>
-                        `).join("")}
-                    </div>
-                </fieldset>
-            </div>
-            <label aria-label="Drug name, CPT/HCPCS Code or Code Description">${nameText}</label>
-            <div class="form-item">
-                <input aria-label="Drug name, CPT/HCPCS Code or Code Description" class="ant-text-input ant-input-long ng-pristine ng-valid ng-touched" type="text" readonly="" aria-disabled="true" placeholder="Type a drug name, CPT/HCPCS code or code description">
-            </div>
-            <div class="searchDiv" style="display: none;">
-                <div class="form-item">
-                    <input id="codeDescription" name="codeDescription" type="text" autofocus="" class="ng-valid ng-touched ng-dirty" aria-label="code description" placeholder="${instructionsText}">
-                </div>
-                <div class="search-loading">Searching.....</div>
-            </div>
-            <button class="primary_btn disabled" data-analytics="searchButtonPrecertification" disabled="disabled"> ${searchText || "Search"}</button>
-        </div>
-        <div data-app-container="" ng-version="6.1.9">
-            <div data-cns-global-modal-cmp=""></div>
-        </div>
-    </section>
-  `;  
+  block.innerHTML = '';
+  const formWrapper = renderForm({
+    marketText,
+    marketValueText,
+    lobText,
+    lobListItems,
+    nameText,
+    instructionsText,
+    searchText,
+  });
   block.append(formWrapper);
 
-  // add event listener to form for api call to input text field and display
-  // result in a div below the form for each character typed in the input field
-  const npiInput = formWrapper.querySelector("#npi");
-  const lookupPanel = formWrapper.querySelector(".lookup-panel");
-  const lookupEcho = formWrapper.querySelector(".lookup-panel-echo");
-  const lookupHint = formWrapper.querySelector(".lookup-hint");
-  const resultEl = formWrapper.querySelector(".lookup-results");
-  const searchButton = formWrapper.querySelector(".search-button");
-  const resultSection = block.querySelector(".search-results");
+  const resultsContainer = document.createElement('div');
+  resultsContainer.className = 'search-results';
+  block.append(resultsContainer);
 
-  npiInput.addEventListener("input", async (e) => {
-    const npi = e.target.value;
-    lookupEcho.value = npi;
-    searchButton.disabled = npi.trim().length < 3;
-    resultSection.innerHTML = "";
+  const [marketRoot, lobRoot] = formWrapper.querySelectorAll('.ant-lg-select');
+  wireDropdown(marketRoot);
+  const lobDropdown = wireDropdown(lobRoot);
 
-    if (!npi) {
-      lookupPanel.hidden = true;
-      resultEl.innerHTML = "";
-      return;
-    }
+  const scopeEl = formWrapper.querySelector('[data-tcp-pluto-cmp]');
+  const searchButton = formWrapper.querySelector('.primary-btn');
 
-    lookupPanel.hidden = false;
-
-    if (npi.length < 3) {
-      lookupHint.hidden = false;
-      resultEl.innerHTML = "";
-      return;
-    }
-
-    lookupHint.hidden = true;
-    resultSection.innerHTML = "";
-    resultEl.textContent = "Loading…";
-
-    try {
-      const data = await fetchMockSuggestionData();
-
-      if (Array.isArray(data) && data.length > 0) {
-        const results = data.map((item) => {
-          const procedureCode = item?.procedureCode ?? "Not found";
-          const description = item?.description ?? "No description";
-          return `${procedureCode}: ${description}`;
-        });
-
-        resultEl.innerHTML = results
-          .map((result) => `<div class="result-row">${result}</div>`)
-          .join("");
-        const resultRows = resultEl.querySelectorAll(".result-row");
-        resultRows.forEach((row) => {
-          row.addEventListener("click", () => {
-            const [code, ...rest] = row.textContent.split(":");
-            npiInput.value = `${code.trim()} ${rest.join(":").trim()}`;
-            lookupEcho.value = npiInput.value;
-            lookupPanel.hidden = true;
-            resultEl.innerHTML = "";
-            resultSection.innerHTML = "";
-          });
-        });
-      } else {
-        resultSection.innerHTML = "";
-        resultEl.textContent = "No results found.";
-      }
-    } catch (err) {
-      console.error("Provider lookup failed:", err);
-      resultSection.innerHTML = "";
-      resultEl.textContent = "Something went wrong. Please try again.";
-    }
+  wireDrugField(scopeEl, {
+    onInput: (value) => {
+      searchButton.disabled = value.trim().length < 3;
+    },
   });
 
-  searchButton.addEventListener("click", async (e) => {
-    e.preventDefault();
-    lookupPanel.hidden = false;
-    lookupHint.hidden = true;
-    resultSection.innerHTML = "";
-    resultEl.textContent = "Loading…";
+  searchButton.addEventListener('click', async () => {
+    resultsContainer.innerHTML = 'Loading…';
 
     try {
       const data = await fetchMockSearchData();
-
-      if (Array.isArray(data) && data.length > 0) {
-        resultEl.innerHTML = "";
-
-        resultSection.innerHTML = data
-          .map((item) => {
-            const procedureCode = item?.procedureCode ?? "Not found";
-            const description = item?.procedureCodeDescription ?? "None";
-            const policy = item?.precertCodeGuideList?.[0]?.policy ?? "None";
-            const cmsGuideLine = item?.cmsGuideLine ?? "None";
-            const stateGuideLine = item?.stateGuideLine ?? "None";
-            const thirdPartyGuideLine =
-              item?.precertCodeGuideList?.[0]?.interQualSubset ?? "None";
-            const lobSelect = formWrapper.querySelector("#lob");
-            const selectedLobText =
-              lobSelect.options[lobSelect.selectedIndex].text;
-
-            return `
-            <article class="result-card">
-                <h3>NO - Precertification is not required</h3>
-                    <div class="row">
-                        <div>
-                            <label aria-label="line of business">
-                                Line of Business:
-                            </label>
-                        </div>
-                        <div>
-                            ${selectedLobText}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div>
-                            <label aria-label="procedure code">
-                                CPT/HCPCS Code:
-                            </label>
-                        </div>
-                        <div>
-                            ${procedureCode}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div>
-                            <label aria-label="Procedure Code description">
-                                Description:
-                            </label>
-                        </div>
-                        <div>
-                            ${description}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div>
-                            <label aria-label="policy guideline">
-                                Policy/Clinical Guideline:
-                            </label>
-                        </div>
-                        <div>
-                            ${policy}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div>
-                            <label aria-label="cms GuideLine">
-                                CMS Guideline:
-                            </label>
-                        </div>
-                        <div>
-                            ${cmsGuideLine}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div>
-                            <label aria-label="state GuideLine">
-                                State Guideline:
-                            </label>
-                        </div>
-                        <div>
-                            ${stateGuideLine}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div>
-                            <label aria-label="inter Qual GuideLine">
-                                Third Party Guidelines:
-                            </label>
-                        </div>
-                        <div>
-                            ${thirdPartyGuideLine}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div>
-                            <label aria-label="carelon rx clinical criteria">
-                                Carelon RX Criteria:
-                            </label>
-                        </div>
-                        <div>
-                            <p class="carelonrx">
-                                <a aria-label="carelon rx clinical criteria" class="external_link" tabindex="0" target="_blank" href="https://www.anthem.com/ms/pharmacyinformation/clinicalcriteria.html">
-                                    Clinical Criteria (anthem.com)
-                                </a>
-                            </p>
-                        </div>
-                    </div>
-                </article>
-            `;
-          })
-          .join("");
-      } else {
-        resultSection.innerHTML = "";
-        resultEl.textContent = "No results found.";
+      if (!Array.isArray(data) || data.length === 0) {
+        resultsContainer.textContent = 'No results found.';
+        return;
       }
+
+      const selectedLobText = lobDropdown.value || lobListItems[0] || '';
+      resultsContainer.innerHTML = data
+        .map((item) => renderResultCard(item, selectedLobText))
+        .join('');
     } catch (err) {
-      console.error("Provider lookup failed:", err);
-      resultSection.innerHTML = "";
-      resultEl.textContent = "Something went wrong. Please try again.";
+      // eslint-disable-next-line no-console
+      console.error('Provider lookup search failed:', err);
+      resultsContainer.textContent = 'Something went wrong. Please try again.';
     }
   });
 }
