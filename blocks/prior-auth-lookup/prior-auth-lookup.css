@@ -30,7 +30,11 @@ body.north-carolina .prior-auth-lookup .prior-auth-lookup-field {
   color: var(--text-color);
 }
 
-body.north-carolina .prior-auth-lookup .prior-auth-lookup-field select,
+body.north-carolina .prior-auth-lookup .prior-auth-lookup-field > span {
+  cursor: pointer;
+  width: fit-content;
+}
+
 body.north-carolina .prior-auth-lookup .prior-auth-lookup-field input {
   box-sizing: border-box;
   width: 100%;
@@ -38,33 +42,97 @@ body.north-carolina .prior-auth-lookup .prior-auth-lookup-field input {
   margin-top: 5px;
   padding: 8px 16px;
   border: 1px solid #666;
-  border-radius: 4px;
+  border-radius: 3px;
   background-color: var(--background-color);
   font-family: var(--body-font-family);
   font-size: 16px;
   font-weight: 400;
   line-height: 1.4;
-  color: var(--text-color);
-}
-
-/* Native select: replace default arrow with a brand-blue chevron */
-body.north-carolina .prior-auth-lookup .prior-auth-lookup-field select {
-  appearance: none;
-  border-radius: 3px;
-  padding-right: 40px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="none" stroke="%23016b95" stroke-width="2" d="M2 5l6 6 6-6"/></svg>');
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  cursor: pointer;
-}
-
-body.north-carolina .prior-auth-lookup .prior-auth-lookup-field select:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+  color: #666;
 }
 
 body.north-carolina .prior-auth-lookup .prior-auth-lookup-field input::placeholder {
   color: #757575;
+}
+
+/* Custom listbox — replaces native <select> so the dropdown's option
+   styling (incl. the focused/highlighted option) is fully controllable
+   across all browsers, unlike native <select> popups which are OS-rendered. */
+body.north-carolina .prior-auth-lookup .prior-auth-lookup-select {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin-top: 5px;
+}
+
+body.north-carolina .prior-auth-lookup .prior-auth-lookup-select-button {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  padding: 8px 40px 8px 16px;
+  border: 1px solid #666;
+  border-radius: 3px;
+  background-color: var(--background-color);
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="none" stroke="%23016b95" stroke-width="2" d="M2 5l6 6 6-6"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  font-family: var(--body-font-family);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #666;
+  text-align: left;
+  cursor: pointer;
+}
+
+body.north-carolina .prior-auth-lookup .prior-auth-lookup-select-value {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+body.north-carolina .prior-auth-lookup .prior-auth-lookup-select-button:focus-visible {
+  outline: 2px solid #044661;
+  outline-offset: 2px;
+}
+
+body.north-carolina .prior-auth-lookup .prior-auth-lookup-select-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+body.north-carolina .prior-auth-lookup .prior-auth-lookup-select-listbox {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  margin: 0;
+  padding: 4px 0;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid #666;
+  border-radius: 3px;
+  background-color: var(--background-color);
+  box-shadow: 0 4px 10px rgb(0 0 0 / 15%);
+}
+
+body.north-carolina .prior-auth-lookup .prior-auth-lookup-select-option {
+  padding: 8px 16px;
+  font-family: var(--body-font-family);
+  font-size: 16px;
+  line-height: 1.4;
+  color: #666;
+  cursor: pointer;
+}
+
+/* Focused/highlighted option in the custom dropdown */
+body.north-carolina .prior-auth-lookup .prior-auth-lookup-select-option.is-active,
+body.north-carolina .prior-auth-lookup .prior-auth-lookup-select-option[aria-selected='true'] {
+  background: #044661;
+  color: #FFF;
 }
 
 /* Search button — compact (auto width), sits below the input.

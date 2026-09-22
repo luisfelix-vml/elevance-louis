@@ -26,13 +26,14 @@ const ACCORDION_TOPICS = [
 ];
 
 function useMock() {
-  const { hostname, search } = window.location;
-  const params = new URLSearchParams(search);
-  if (params.get('mock') === '1') return true;
-  if (params.get('mock') === '0') return false;
-  return hostname.endsWith('.hlx.page')
-    || hostname.endsWith('.aem.page')
-    || hostname === 'localhost';
+  // const { hostname, search } = window.location;
+  // const params = new URLSearchParams(search);
+  // if (params.get('mock') === '1') return true;
+  // if (params.get('mock') === '0') return false;
+  // return hostname.endsWith('.hlx.page')
+  //   || hostname.endsWith('.aem.page')
+  //   || hostname === 'localhost';
+  return true; // always use mock for now
 }
 
 function resolveDocUrl(uri) {
