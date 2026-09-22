@@ -1,4 +1,7 @@
-import { fetchMockSuggestionData, fetchMockSearchData } from '../../scripts/lookup-service/lookup-service.js';
+import {
+  fetchMockSuggestionData,
+  fetchMockSearchData,
+} from "../../scripts/lookup-service/lookup-service.js";
 
 // blocks/provider-lookup/provider-lookup.js
 export default async function decorate(block) {
@@ -7,19 +10,22 @@ export default async function decorate(block) {
   const rows = [...block.children];
   const [marketRow, lobRow, nameRow, searchRow] = rows;
 
-  const cellText = (row, index) => row?.children[index]?.querySelector('p')?.textContent?.trim() || '';
+  const cellText = (row, index) =>
+    row?.children[index]?.querySelector("p")?.textContent?.trim() || "";
 
   const marketText = cellText(marketRow, 0);
   const marketValueText = cellText(marketRow, 1);
   const lobText = cellText(lobRow, 0);
-  const lobListItems = [...lobRow?.children[1]?.querySelectorAll('li') ?? []].map((li) => li.textContent?.trim() || '');
+  const lobListItems = [
+    ...(lobRow?.children[1]?.querySelectorAll("li") ?? []),
+  ].map((li) => li.textContent?.trim() || "");
   const nameText = cellText(nameRow, 0);
   const instructionsText = cellText(nameRow, 1);
   const searchText = cellText(searchRow, 0);
 
-  block.innerHTML = '';
-  const formWrapper = document.createElement('div');
-  formWrapper.className = 'provider-lookup-wrapper';
+  block.innerHTML = "";
+  const formWrapper = document.createElement("div");
+  formWrapper.className = "provider-lookup-wrapper";
   // Build form with 2 dropdowns for market and lob, a typeahead input for the
   // procedure/drug lookup, and a submit button
   formWrapper.innerHTML = `
@@ -28,7 +34,7 @@ export default async function decorate(block) {
                 <label for="market">${marketText}</label>
                 <div class="select-wrap">
                     <select name="market" id="market">
-                        ${marketValueText ? `<option value="${marketValueText}">${marketValueText}</option>` : ''}
+                        ${marketValueText ? `<option value="${marketValueText}">${marketValueText}</option>` : ""}
                     </select>
                 </div>
             </div>
@@ -36,7 +42,7 @@ export default async function decorate(block) {
                 <label for="lob">${lobText}</label>
                 <div class="select-wrap">
                     <select name="lob" id="lob">
-                        ${lobListItems.map((item) => `<option value="${item}">${item}</option>`).join('')}
+                        ${lobListItems.map((item) => `<option value="${item}">${item}</option>`).join("")}
                     </select>
                 </div>
             </div>
@@ -49,31 +55,86 @@ export default async function decorate(block) {
                     <div class="lookup-results"></div>
                 </div>
             </div>
-            <button type="submit" class="search-button" disabled>${searchText || 'Search'}</button>
+            <button type="submit" class="search-button" disabled>${searchText || "Search"}</button>
         </form>
         <div class="search-results"></div>
     `;
+  formWrapper.innerHTML = `
+    <section class="content_column angular-form-content">
+        <div data-tcp-pluto-cmp="">
+            <label aria-labelledby="Market">Market</label>
+            <div aria-label="Select the Market" class="form-item ant-lg-select ng-valid uxd-btn-ddl ng-touched ng-dirty" data-uxd-dropdown-cmp="" id="marketSelect" name="marketSelect">
+                <fieldset class="pfSelect">
+                    <span class="sr-only">label:</span>
+                    <legend id="legendmarketSelect"></legend>
+                    <button class="btn-primary psButton btn" tabindex="-1" type="button" id="psButtonmarketSelect">
+                        <span class="psActiveOption" id="psActiveOptionmarketSelect">North Carolina</span>
+                        <span class="psArrow fa fa-caret-down"></span>
+                    </button>
+                    <div class="psDropdown" tabindex="-1" id="psDropdownmarketSelect">
+                        <span class="sr-only">Use up and down arrow keys to cycle through options. Press enter to select</span>
+                        <input class="psOption focus" type="radio" id="ddlInputmarketSelect0" name="ddlInputmarketSelect" value="NC" checked="">
+                        <label class="psLabel" id="ddlLabelmarketSelect0" for="ddlInputmarketSelect0">North Carolina</label>
+                    </div>
+                </fieldset>
+            </div>
+            <label aria-labelledby="line of business">Line of Business</label>
+            <div aria-label="Select the Line of Business" class="ant-lg-select form-item ng-valid uxd-btn-ddl ng-touched ng-dirty" data-uxd-dropdown-cmp="" id="lobSelect">
+                <fieldset class="pfSelect">
+                    <span class="sr-only">label:</span>
+                        <legend id="legendlobSelect"></legend>
+                        <button class="btn-primary psButton btn" tabindex="-1" type="button" id="psButtonlobSelect">
+                            <span class="psActiveOption" id="psActiveOptionlobSelect">Medicaid/SCHIP/Family Care</span>
+                            <span class="psArrow fa fa-caret-down"></span>
+                        </button>
+                        <div class="psDropdown" tabindex="-1" id="psDropdownlobSelect">
+                            <span class="sr-only">Use up and down arrow keys to cycle through options. Press enter to select</span>
+                            <input class="psOption focus" type="radio" id="ddlInputlobSelect0" name="ddlInputlobSelect" value="CAID" checked="">
+                            <label class="psLabel" id="ddlLabellobSelect0" for="ddlInputlobSelect0">Medicaid/SCHIP/Family Care</label>
+                            <input class="psOption" type="radio" id="ddlInputlobSelect1" name="ddlInputlobSelect" value="CFSP">
+                            <label class="psLabel" id="ddlLabellobSelect1" for="ddlInputlobSelect1">CFSP – Healthy Blue Care Together</label>
+                        </div>
+                    </fieldset>
+                </div>
+                <label aria-label="Drug name, CPT/HCPCS Code or Code Description">Drug name, CPT/HCPCS Code or Code Description</label>
+                <div class="form-item">
+                    <input aria-label="Drug name, CPT/HCPCS Code or Code Description" class="ant-text-input ant-input-long ng-pristine ng-valid ng-touched" type="text" readonly="" aria-disabled="true" placeholder="Type a drug name, CPT/HCPCS code or code description">
+                </div>
+                <div class="searchDiv" style="display: none;">
+                    <div class="form-item">
+                        <input id="codeDescription" name="codeDescription" type="text" autofocus="" class="ng-valid ng-touched ng-dirty" aria-label="code description" placeholder="Type a drug name, CPT/HCPCS code or code description">
+                    </div>
+                    <div class="search-loading">Searching.....</div>
+                </div>
+                <button class="primary_btn disabled" data-analytics="searchButtonPrecertification" disabled="disabled"> Search</button>
+            </div>
+            <div data-app-container="" ng-version="6.1.9">
+                <div data-cns-global-modal-cmp=""></div>
+            </div>
+        </div>
+    </section>
+  `;  
   block.append(formWrapper);
 
   // add event listener to form for api call to input text field and display
   // result in a div below the form for each character typed in the input field
-  const npiInput = formWrapper.querySelector('#npi');
-  const lookupPanel = formWrapper.querySelector('.lookup-panel');
-  const lookupEcho = formWrapper.querySelector('.lookup-panel-echo');
-  const lookupHint = formWrapper.querySelector('.lookup-hint');
-  const resultEl = formWrapper.querySelector('.lookup-results');
-  const searchButton = formWrapper.querySelector('.search-button');
-  const resultSection = block.querySelector('.search-results');
+  const npiInput = formWrapper.querySelector("#npi");
+  const lookupPanel = formWrapper.querySelector(".lookup-panel");
+  const lookupEcho = formWrapper.querySelector(".lookup-panel-echo");
+  const lookupHint = formWrapper.querySelector(".lookup-hint");
+  const resultEl = formWrapper.querySelector(".lookup-results");
+  const searchButton = formWrapper.querySelector(".search-button");
+  const resultSection = block.querySelector(".search-results");
 
-  npiInput.addEventListener('input', async (e) => {
+  npiInput.addEventListener("input", async (e) => {
     const npi = e.target.value;
     lookupEcho.value = npi;
     searchButton.disabled = npi.trim().length < 3;
-    resultSection.innerHTML = '';
+    resultSection.innerHTML = "";
 
     if (!npi) {
       lookupPanel.hidden = true;
-      resultEl.innerHTML = '';
+      resultEl.innerHTML = "";
       return;
     }
 
@@ -81,168 +142,174 @@ export default async function decorate(block) {
 
     if (npi.length < 3) {
       lookupHint.hidden = false;
-      resultEl.innerHTML = '';
+      resultEl.innerHTML = "";
       return;
     }
 
     lookupHint.hidden = true;
-    resultSection.innerHTML = '';
-    resultEl.textContent = 'Loading…';
+    resultSection.innerHTML = "";
+    resultEl.textContent = "Loading…";
 
     try {
       const data = await fetchMockSuggestionData();
 
       if (Array.isArray(data) && data.length > 0) {
         const results = data.map((item) => {
-          const procedureCode = item?.procedureCode ?? 'Not found';
-          const description = item?.description ?? 'No description';
+          const procedureCode = item?.procedureCode ?? "Not found";
+          const description = item?.description ?? "No description";
           return `${procedureCode}: ${description}`;
         });
 
-        resultEl.innerHTML = results.map((result) => `<div class="result-row">${result}</div>`).join('');
-        const resultRows = resultEl.querySelectorAll('.result-row');
+        resultEl.innerHTML = results
+          .map((result) => `<div class="result-row">${result}</div>`)
+          .join("");
+        const resultRows = resultEl.querySelectorAll(".result-row");
         resultRows.forEach((row) => {
-          row.addEventListener('click', () => {
-            const [code, ...rest] = row.textContent.split(':');
-            npiInput.value = `${code.trim()} ${rest.join(':').trim()}`;
+          row.addEventListener("click", () => {
+            const [code, ...rest] = row.textContent.split(":");
+            npiInput.value = `${code.trim()} ${rest.join(":").trim()}`;
             lookupEcho.value = npiInput.value;
             lookupPanel.hidden = true;
-            resultEl.innerHTML = '';
-            resultSection.innerHTML = '';
+            resultEl.innerHTML = "";
+            resultSection.innerHTML = "";
           });
         });
       } else {
-        resultSection.innerHTML = '';
-        resultEl.textContent = 'No results found.';
+        resultSection.innerHTML = "";
+        resultEl.textContent = "No results found.";
       }
     } catch (err) {
-      console.error('Provider lookup failed:', err);
-      resultSection.innerHTML = '';
-      resultEl.textContent = 'Something went wrong. Please try again.';
+      console.error("Provider lookup failed:", err);
+      resultSection.innerHTML = "";
+      resultEl.textContent = "Something went wrong. Please try again.";
     }
   });
 
-  searchButton.addEventListener('click', async (e) => {
+  searchButton.addEventListener("click", async (e) => {
     e.preventDefault();
     lookupPanel.hidden = false;
     lookupHint.hidden = true;
-    resultSection.innerHTML = '';
-    resultEl.textContent = 'Loading…';
+    resultSection.innerHTML = "";
+    resultEl.textContent = "Loading…";
 
     try {
       const data = await fetchMockSearchData();
 
       if (Array.isArray(data) && data.length > 0) {
-        resultEl.innerHTML = '';
+        resultEl.innerHTML = "";
 
-        resultSection.innerHTML = data.map((item) => {
-          const procedureCode = item?.procedureCode ?? 'Not found';
-          const description = item?.procedureCodeDescription ?? 'None';
-          const policy = item?.precertCodeGuideList?.[0]?.policy ?? 'None';
-          const cmsGuideLine = item?.cmsGuideLine ?? 'None';
-          const stateGuideLine = item?.stateGuideLine ?? 'None';
-          const thirdPartyGuideLine = item?.precertCodeGuideList?.[0]?.interQualSubset ?? 'None';
-          const lobSelect = formWrapper.querySelector('#lob');
-          const selectedLobText = lobSelect.options[lobSelect.selectedIndex].text;
+        resultSection.innerHTML = data
+          .map((item) => {
+            const procedureCode = item?.procedureCode ?? "Not found";
+            const description = item?.procedureCodeDescription ?? "None";
+            const policy = item?.precertCodeGuideList?.[0]?.policy ?? "None";
+            const cmsGuideLine = item?.cmsGuideLine ?? "None";
+            const stateGuideLine = item?.stateGuideLine ?? "None";
+            const thirdPartyGuideLine =
+              item?.precertCodeGuideList?.[0]?.interQualSubset ?? "None";
+            const lobSelect = formWrapper.querySelector("#lob");
+            const selectedLobText =
+              lobSelect.options[lobSelect.selectedIndex].text;
 
-          return `
-                            <article class="result-card">
-                                <h3>NO - Precertification is not required</h3>
-                                    <div class="row">
-                                        <div>
-                                            <label aria-label="line of business">
-                                                Line of Business:
-                                            </label>
-                                        </div>
-                                        <div>
-                                            ${selectedLobText}
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div>
-                                            <label aria-label="procedure code">
-                                                CPT/HCPCS Code:
-                                            </label>
-                                        </div>
-                                        <div>
-                                            ${procedureCode}
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div>
-                                            <label aria-label="Procedure Code description">
-                                                Description:
-                                            </label>
-                                        </div>
-                                        <div>
-                                            ${description}
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div>
-                                            <label aria-label="policy guideline">
-                                                Policy/Clinical Guideline:
-                                            </label>
-                                        </div>
-                                        <div>
-                                            ${policy}
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div>
-                                            <label aria-label="cms GuideLine">
-                                                CMS Guideline:
-                                            </label>
-                                        </div>
-                                        <div>
-                                            ${cmsGuideLine}
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div>
-                                            <label aria-label="state GuideLine">
-                                                State Guideline:
-                                            </label>
-                                        </div>
-                                        <div>
-                                            ${stateGuideLine}
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div>
-                                            <label aria-label="inter Qual GuideLine">
-                                                Third Party Guidelines:
-                                            </label>
-                                        </div>
-                                        <div>
-                                            ${thirdPartyGuideLine}
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div>
-                                            <label aria-label="carelon rx clinical criteria">
-                                                Carelon RX Criteria:
-                                            </label>
-                                        </div>
-                                        <div>
-                                            <p class="carelonrx">
-                                                <a aria-label="carelon rx clinical criteria" class="external_link" tabindex="0" target="_blank" href="https://www.anthem.com/ms/pharmacyinformation/clinicalcriteria.html">
-                                                    Clinical Criteria (anthem.com)
-                                                </a>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </article>
-                            `;
-        }).join('');
+            return `
+            <article class="result-card">
+                <h3>NO - Precertification is not required</h3>
+                    <div class="row">
+                        <div>
+                            <label aria-label="line of business">
+                                Line of Business:
+                            </label>
+                        </div>
+                        <div>
+                            ${selectedLobText}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div>
+                            <label aria-label="procedure code">
+                                CPT/HCPCS Code:
+                            </label>
+                        </div>
+                        <div>
+                            ${procedureCode}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div>
+                            <label aria-label="Procedure Code description">
+                                Description:
+                            </label>
+                        </div>
+                        <div>
+                            ${description}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div>
+                            <label aria-label="policy guideline">
+                                Policy/Clinical Guideline:
+                            </label>
+                        </div>
+                        <div>
+                            ${policy}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div>
+                            <label aria-label="cms GuideLine">
+                                CMS Guideline:
+                            </label>
+                        </div>
+                        <div>
+                            ${cmsGuideLine}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div>
+                            <label aria-label="state GuideLine">
+                                State Guideline:
+                            </label>
+                        </div>
+                        <div>
+                            ${stateGuideLine}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div>
+                            <label aria-label="inter Qual GuideLine">
+                                Third Party Guidelines:
+                            </label>
+                        </div>
+                        <div>
+                            ${thirdPartyGuideLine}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div>
+                            <label aria-label="carelon rx clinical criteria">
+                                Carelon RX Criteria:
+                            </label>
+                        </div>
+                        <div>
+                            <p class="carelonrx">
+                                <a aria-label="carelon rx clinical criteria" class="external_link" tabindex="0" target="_blank" href="https://www.anthem.com/ms/pharmacyinformation/clinicalcriteria.html">
+                                    Clinical Criteria (anthem.com)
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </article>
+            `;
+          })
+          .join("");
       } else {
-        resultSection.innerHTML = '';
-        resultEl.textContent = 'No results found.';
+        resultSection.innerHTML = "";
+        resultEl.textContent = "No results found.";
       }
     } catch (err) {
-      console.error('Provider lookup failed:', err);
-      resultSection.innerHTML = '';
-      resultEl.textContent = 'Something went wrong. Please try again.';
+      console.error("Provider lookup failed:", err);
+      resultSection.innerHTML = "";
+      resultEl.textContent = "Something went wrong. Please try again.";
     }
   });
 }
