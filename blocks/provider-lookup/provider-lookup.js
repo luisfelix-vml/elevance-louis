@@ -29,40 +29,9 @@ export default async function decorate(block) {
   // Build form with 2 dropdowns for market and lob, a typeahead input for the
   // procedure/drug lookup, and a submit button
   formWrapper.innerHTML = `
-        <form class="provider-lookup-form">
-            <div class="form-row">
-                <label for="market">${marketText}</label>
-                <div class="select-wrap">
-                    <select name="market" id="market">
-                        ${marketValueText ? `<option value="${marketValueText}">${marketValueText}</option>` : ""}
-                    </select>
-                </div>
-            </div>
-            <div class="form-row">
-                <label for="lob">${lobText}</label>
-                <div class="select-wrap">
-                    <select name="lob" id="lob">
-                        ${lobListItems.map((item) => `<option value="${item}">${item}</option>`).join("")}
-                    </select>
-                </div>
-            </div>
-            <div class="form-row">
-                <label for="npi">${nameText}</label>
-                <input type="text" name="npi" id="npi" placeholder="${instructionsText}" autocomplete="off" required>
-                <div class="lookup-panel" hidden>
-                    <input type="text" class="lookup-panel-echo" tabindex="-1" readonly>
-                    <p class="lookup-hint">Please enter 3 or more characters.</p>
-                    <div class="lookup-results"></div>
-                </div>
-            </div>
-            <button type="submit" class="search-button" disabled>${searchText || "Search"}</button>
-        </form>
-        <div class="search-results"></div>
-    `;
-  formWrapper.innerHTML = `
     <section class="content_column angular-form-content">
         <div data-tcp-pluto-cmp="">
-            <label aria-labelledby="Market">Market</label>
+            <label aria-labelledby="Market">${marketText}</label>
             <div aria-label="Select the Market" class="form-item ant-lg-select ng-valid uxd-btn-ddl ng-touched ng-dirty" data-uxd-dropdown-cmp="" id="marketSelect" name="marketSelect">
                 <fieldset class="pfSelect">
                     <span class="sr-only">label:</span>
@@ -73,12 +42,11 @@ export default async function decorate(block) {
                     </button>
                     <div class="psDropdown" tabindex="-1" id="psDropdownmarketSelect">
                         <span class="sr-only">Use up and down arrow keys to cycle through options. Press enter to select</span>
-                        <input class="psOption focus" type="radio" id="ddlInputmarketSelect0" name="ddlInputmarketSelect" value="NC" checked="">
-                        <label class="psLabel" id="ddlLabelmarketSelect0" for="ddlInputmarketSelect0">North Carolina</label>
+                        ${marketValueText ? `<input class="psOption focus" type="radio" value="${marketValueText}" checked=""> <label class="psLabel">${marketValueText}</label>` : ""}
                     </div>
                 </fieldset>
             </div>
-            <label aria-labelledby="line of business">Line of Business</label>
+            <label aria-labelledby="line of business">${lobText}</label>
             <div aria-label="Select the Line of Business" class="ant-lg-select form-item ng-valid uxd-btn-ddl ng-touched ng-dirty" data-uxd-dropdown-cmp="" id="lobSelect">
                 <fieldset class="pfSelect">
                     <span class="sr-only">label:</span>
@@ -89,24 +57,24 @@ export default async function decorate(block) {
                         </button>
                         <div class="psDropdown" tabindex="-1" id="psDropdownlobSelect">
                             <span class="sr-only">Use up and down arrow keys to cycle through options. Press enter to select</span>
-                            <input class="psOption focus" type="radio" id="ddlInputlobSelect0" name="ddlInputlobSelect" value="CAID" checked="">
-                            <label class="psLabel" id="ddlLabellobSelect0" for="ddlInputlobSelect0">Medicaid/SCHIP/Family Care</label>
-                            <input class="psOption" type="radio" id="ddlInputlobSelect1" name="ddlInputlobSelect" value="CFSP">
-                            <label class="psLabel" id="ddlLabellobSelect1" for="ddlInputlobSelect1">CFSP – Healthy Blue Care Together</label>
+                            ${lobListItems.map((item) => `
+                                <input class="psOption" type="radio" value="${item}" checked="">
+                                <label class="psLabel">${item}</label>
+                            `).join("")}
                         </div>
                     </fieldset>
                 </div>
-                <label aria-label="Drug name, CPT/HCPCS Code or Code Description">Drug name, CPT/HCPCS Code or Code Description</label>
+                <label aria-label="Drug name, CPT/HCPCS Code or Code Description"${nameText}</label>
                 <div class="form-item">
                     <input aria-label="Drug name, CPT/HCPCS Code or Code Description" class="ant-text-input ant-input-long ng-pristine ng-valid ng-touched" type="text" readonly="" aria-disabled="true" placeholder="Type a drug name, CPT/HCPCS code or code description">
                 </div>
                 <div class="searchDiv" style="display: none;">
                     <div class="form-item">
-                        <input id="codeDescription" name="codeDescription" type="text" autofocus="" class="ng-valid ng-touched ng-dirty" aria-label="code description" placeholder="Type a drug name, CPT/HCPCS code or code description">
+                        <input id="codeDescription" name="codeDescription" type="text" autofocus="" class="ng-valid ng-touched ng-dirty" aria-label="code description" placeholder="${instructionsText}">
                     </div>
                     <div class="search-loading">Searching.....</div>
                 </div>
-                <button class="primary_btn disabled" data-analytics="searchButtonPrecertification" disabled="disabled"> Search</button>
+                <button class="primary_btn disabled" data-analytics="searchButtonPrecertification" disabled="disabled"> ${searchText || "Search"}</button>
             </div>
             <div data-app-container="" ng-version="6.1.9">
                 <div data-cns-global-modal-cmp=""></div>
