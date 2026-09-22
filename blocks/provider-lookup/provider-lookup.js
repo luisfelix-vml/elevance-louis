@@ -64,7 +64,7 @@ export default async function decorate(block) {
                         </div>
                     </fieldset>
                 </div>
-                <label aria-label="Drug name, CPT/HCPCS Code or Code Description"${nameText}</label>
+                <label aria-label="Drug name, CPT/HCPCS Code or Code Description">${nameText}</label>
                 <div class="form-item">
                     <input aria-label="Drug name, CPT/HCPCS Code or Code Description" class="ant-text-input ant-input-long ng-pristine ng-valid ng-touched" type="text" readonly="" aria-disabled="true" placeholder="Type a drug name, CPT/HCPCS code or code description">
                 </div>
