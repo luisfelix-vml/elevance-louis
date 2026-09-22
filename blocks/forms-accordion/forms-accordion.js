@@ -12,8 +12,9 @@
  * "PCP Change Form" becomes the trailing PCP Change Form list.
  */
 
+import { fetchMockFormsData } from '../../scripts/lookup-service/lookup-service.js';
+
 const FORMS_API_URL = 'https://provider.healthybluenc.com/sites/Satellite?d=Universal&pagename=getdocuments&brand=HBNC&state=&formslibrary=gpp_formslib';
-const MOCK_FORMS_DATA_URL = '/blocks/forms-accordion/mock-forms-response.json';
 const DOC_BASE_URL = 'https://provider.healthybluenc.com';
 
 const ACCORDION_TOPICS = [
@@ -96,9 +97,12 @@ export default async function decorate(block) {
   block.append(list);
 
   try {
-    const res = await fetch(useMock() ? MOCK_FORMS_DATA_URL : FORMS_API_URL);
-    if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-    const data = await res.json();
+    const data = useMock()
+      ? await fetchMockFormsData()
+      : await fetch(FORMS_API_URL).then((res) => {
+        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+        return res.json();
+      });
     const docs = data?.AllDocs ?? [];
 
     list.textContent = '';
