@@ -24,7 +24,7 @@ body.north-carolina .provider-lookup .angular-form-content {
 
 /* Precertification result card */
 body.north-carolina .provider-lookup .provider-lookup-container .result-card {
-  padding: 24px;
+  padding: 40px;
   background-color: #eee;
   border-radius: 4px;
   margin-top: 24px;
@@ -32,10 +32,12 @@ body.north-carolina .provider-lookup .provider-lookup-container .result-card {
 
 body.north-carolina .provider-lookup .provider-lookup-container .result-card h3 {
   position: relative;
-  margin: 0 0 20px;
-  padding-bottom: 14px;
-  font-size: 22px;
+  margin: 0 0 32px;
+  padding-bottom: 16px;
+  font-family: var(--heading-font-family);
+  font-size: 28px;
   font-weight: 400;
+  line-height: 1.2;
   color: var(--dark-color, var(--text-color));
 }
 
@@ -44,20 +46,22 @@ body.north-carolina .provider-lookup .provider-lookup-container .result-card h3:
   position: absolute;
   left: 0;
   bottom: 0;
-  width: 40px;
-  height: 3px;
+  width: 48px;
+  height: 4px;
   background-color: var(--brand-blue);
 }
 
 body.north-carolina .provider-lookup .provider-lookup-container .result-card .row {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 24px;
-  padding: 10px 0;
+  gap: 4px 40px;
+  padding: 14px 0;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 body.north-carolina .provider-lookup .provider-lookup-container .result-card .row > div:first-child {
-  flex: 0 0 220px;
+  flex: 0 0 200px;
 }
 
 body.north-carolina .provider-lookup .provider-lookup-container .result-card .row > div:last-child {

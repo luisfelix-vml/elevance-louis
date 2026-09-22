@@ -296,7 +296,7 @@ function renderResultCard(item, selectedLobText) {
         <div>${thirdPartyGuideLine}</div>
       </div>
       <div class="row">
-        <div><label class="result-label">Carelon RX Criteria:</label></div>
+        <div><label class="result-label">Carelon RX Criteria</label></div>
         <div>
           <p class="carelonrx">
             <a class="external-link" target="_blank" rel="noopener" href="https://www.anthem.com/ms/pharmacyinformation/clinicalcriteria.html">
