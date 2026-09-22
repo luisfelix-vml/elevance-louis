@@ -50,35 +50,34 @@ export default async function decorate(block) {
             <div aria-label="Select the Line of Business" class="ant-lg-select form-item ng-valid uxd-btn-ddl ng-touched ng-dirty" data-uxd-dropdown-cmp="" id="lobSelect">
                 <fieldset class="pfSelect">
                     <span class="sr-only">label:</span>
-                        <legend id="legendlobSelect"></legend>
-                        <button class="btn-primary psButton btn" tabindex="-1" type="button" id="psButtonlobSelect">
-                            <span class="psActiveOption" id="psActiveOptionlobSelect">Medicaid/SCHIP/Family Care</span>
-                            <span class="psArrow fa fa-caret-down"></span>
-                        </button>
-                        <div class="psDropdown" tabindex="-1" id="psDropdownlobSelect">
-                            <span class="sr-only">Use up and down arrow keys to cycle through options. Press enter to select</span>
-                            ${lobListItems.map((item) => `
-                                <input class="psOption" type="radio" value="${item}" checked="">
-                                <label class="psLabel">${item}</label>
-                            `).join("")}
-                        </div>
-                    </fieldset>
-                </div>
-                <label aria-label="Drug name, CPT/HCPCS Code or Code Description">${nameText}</label>
-                <div class="form-item">
-                    <input aria-label="Drug name, CPT/HCPCS Code or Code Description" class="ant-text-input ant-input-long ng-pristine ng-valid ng-touched" type="text" readonly="" aria-disabled="true" placeholder="Type a drug name, CPT/HCPCS code or code description">
-                </div>
-                <div class="searchDiv" style="display: none;">
-                    <div class="form-item">
-                        <input id="codeDescription" name="codeDescription" type="text" autofocus="" class="ng-valid ng-touched ng-dirty" aria-label="code description" placeholder="${instructionsText}">
+                    <legend id="legendlobSelect"></legend>
+                    <button class="btn-primary psButton btn" tabindex="-1" type="button" id="psButtonlobSelect">
+                        <span class="psActiveOption" id="psActiveOptionlobSelect">Medicaid/SCHIP/Family Care</span>
+                        <span class="psArrow fa fa-caret-down"></span>
+                    </button>
+                    <div class="psDropdown" tabindex="-1" id="psDropdownlobSelect">
+                        <span class="sr-only">Use up and down arrow keys to cycle through options. Press enter to select</span>
+                        ${lobListItems.map((item) => `
+                            <input class="psOption" type="radio" value="${item}" checked="">
+                            <label class="psLabel">${item}</label>
+                        `).join("")}
                     </div>
-                    <div class="search-loading">Searching.....</div>
+                </fieldset>
+            </div>
+            <label aria-label="Drug name, CPT/HCPCS Code or Code Description">${nameText}</label>
+            <div class="form-item">
+                <input aria-label="Drug name, CPT/HCPCS Code or Code Description" class="ant-text-input ant-input-long ng-pristine ng-valid ng-touched" type="text" readonly="" aria-disabled="true" placeholder="Type a drug name, CPT/HCPCS code or code description">
+            </div>
+            <div class="searchDiv" style="display: none;">
+                <div class="form-item">
+                    <input id="codeDescription" name="codeDescription" type="text" autofocus="" class="ng-valid ng-touched ng-dirty" aria-label="code description" placeholder="${instructionsText}">
                 </div>
-                <button class="primary_btn disabled" data-analytics="searchButtonPrecertification" disabled="disabled"> ${searchText || "Search"}</button>
+                <div class="search-loading">Searching.....</div>
             </div>
-            <div data-app-container="" ng-version="6.1.9">
-                <div data-cns-global-modal-cmp=""></div>
-            </div>
+            <button class="primary_btn disabled" data-analytics="searchButtonPrecertification" disabled="disabled"> ${searchText || "Search"}</button>
+        </div>
+        <div data-app-container="" ng-version="6.1.9">
+            <div data-cns-global-modal-cmp=""></div>
         </div>
     </section>
   `;  
