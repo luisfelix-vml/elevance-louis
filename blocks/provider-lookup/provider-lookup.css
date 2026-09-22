@@ -1,4 +1,4 @@
-/*
+provider-lookup .provider-lookup-container .result-card/*
  * provider-lookup — visual design migrated from
  * https://provider.healthybluenc.com/north-carolina-provider/prior-authorization-lookup
  *
@@ -23,14 +23,14 @@ body.north-carolina .provider-lookup .angular-form-content {
 }
 
 /* Precertification result card */
-body.north-carolina .provider-lookup .provider-lookup-container .result-card {
+body.north-carolina .provider-lookup-container .result-card {
   padding: 40px;
   background-color: #eee;
   border-radius: 4px;
   margin-top: 24px;
 }
 
-body.north-carolina .provider-lookup .provider-lookup-container .result-card h3 {
+body.north-carolina .provider-lookup-container .result-card h3 {
   position: relative;
   margin: 0 0 32px;
   padding-bottom: 16px;
@@ -41,7 +41,7 @@ body.north-carolina .provider-lookup .provider-lookup-container .result-card h3 
   color: var(--dark-color, var(--text-color));
 }
 
-body.north-carolina .provider-lookup .provider-lookup-container .result-card h3::after {
+body.north-carolina .provider-lookup-container .result-card h3::after {
   content: "";
   position: absolute;
   left: 0;
@@ -51,7 +51,7 @@ body.north-carolina .provider-lookup .provider-lookup-container .result-card h3:
   background-color: var(--brand-blue);
 }
 
-body.north-carolina .provider-lookup .provider-lookup-container .result-card .row {
+body.north-carolina .provider-lookup-container .result-card .row {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 40px;
@@ -60,27 +60,27 @@ body.north-carolina .provider-lookup .provider-lookup-container .result-card .ro
   line-height: 1.5;
 }
 
-body.north-carolina .provider-lookup .provider-lookup-container .result-card .row > div:first-child {
+body.north-carolina .provider-lookup-container .result-card .row > div:first-child {
   flex: 0 0 200px;
 }
 
-body.north-carolina .provider-lookup .provider-lookup-container .result-card .row > div:last-child {
+body.north-carolina .provider-lookup-container .result-card .row > div:last-child {
   flex: 1 1 240px;
   min-width: 0;
   color: var(--text-color);
 }
 
-body.north-carolina .provider-lookup .provider-lookup-container .result-card .result-label {
+body.north-carolina .provider-lookup-container .result-card .result-label {
   margin: 0;
   font-weight: 700;
   color: var(--text-color);
 }
 
-body.north-carolina .provider-lookup .provider-lookup-container .result-card .carelonrx {
+body.north-carolina .provider-lookup-container .result-card .carelonrx {
   margin: 0;
 }
 
-body.north-carolina .provider-lookup .provider-lookup-container .result-card .external-link {
+body.north-carolina .provider-lookup-container .result-card .external-link {
   color: var(--link-color);
   text-decoration: underline;
 }
