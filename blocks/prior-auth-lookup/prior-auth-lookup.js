@@ -171,12 +171,32 @@ function wireDropdown(root) {
     }
   });
 
+  function commit() {
+    close();
+    button.focus();
+  }
+
+  // Picking an option must close the popup even when it's already checked
+  // (a radio fires no `change` then — e.g. the lone, pre-checked Market).
+  // `change` only syncs the label so arrow keys can still cycle options.
   options.forEach((option) => {
     option.addEventListener('change', () => {
       activeText.textContent = option.value;
-      close();
-      button.focus();
     });
+    option.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        option.checked = true;
+        activeText.textContent = option.value;
+        commit();
+      } else if (event.key === 'Escape') {
+        commit();
+      }
+    });
+  });
+
+  dropdown.querySelectorAll('.ps-label').forEach((label) => {
+    label.addEventListener('click', commit);
   });
 
   document.addEventListener('click', (event) => {
