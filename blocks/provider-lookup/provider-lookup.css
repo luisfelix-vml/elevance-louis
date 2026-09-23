@@ -300,7 +300,7 @@ body.north-carolina .provider-lookup .search-suggestions:not(:empty) {
 }
 
 body.north-carolina .provider-lookup .search-panel input#provider-lookup-code-1:focus {
-    background: url(/icons/search_blue.svg.svg) no-repeat 98% 5px;
+    background: url(/icons/search_blue.svg) no-repeat 98% 9px;
 }
 
 body.north-carolina .provider-lookup .search-suggestion {

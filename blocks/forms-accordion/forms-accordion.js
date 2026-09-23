@@ -12,6 +12,7 @@
  * "PCP Change Form" becomes the trailing PCP Change Form list.
  */
 
+import { decorateIcons } from '../../scripts/aem.js';
 import { fetchMockFormsData } from '../../scripts/lookup-service/lookup-service.js';
 
 const FORMS_API_URL = 'https://provider.healthybluenc.com/sites/Satellite?d=Universal&pagename=getdocuments&brand=HBNC&state=&formslibrary=gpp_formslib';
@@ -54,9 +55,21 @@ function buildDocLink(doc) {
 }
 
 function buildAccordionItem(topic, docs, open) {
+  const icon = document.createElement('span');
+  icon.className = 'forms-accordion-item-icon';
+  const closedIcon = document.createElement('span');
+  closedIcon.className = 'icon icon-plus-circle';
+  const openIcon = document.createElement('span');
+  openIcon.className = 'icon icon-minus-circle';
+  icon.append(closedIcon, openIcon);
+
+  const title = document.createElement('span');
+  title.className = 'forms-accordion-item-title';
+  title.textContent = topic;
+
   const summary = document.createElement('summary');
   summary.className = 'forms-accordion-item-label';
-  summary.textContent = topic;
+  summary.append(icon, title);
 
   const body = document.createElement('div');
   body.className = 'forms-accordion-item-body';
@@ -114,6 +127,7 @@ export default async function decorate(block) {
     const pcpDocs = docs.filter((doc) => (!doc.topic || doc.topic.length === 0)
       && (doc.title || '').startsWith('PCP Change Form'));
     block.append(buildPcpSection(pcpDocs));
+    decorateIcons(block);
   } catch (err) {
     console.error('Forms accordion failed to load:', err);
     list.textContent = 'Unable to load forms right now. Please try again later.';
