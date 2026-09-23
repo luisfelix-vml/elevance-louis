@@ -1,6 +1,6 @@
 import {
-  fetchMockSuggestionData,
-  fetchMockSearchData,
+  fetchSuggestionData,
+  fetchSearchData,
 } from '../../scripts/lookup-service/lookup-service.js';
 
 // blocks/provider-lookup/provider-lookup.js
@@ -211,7 +211,7 @@ function wireDrugField(scopeEl, { onInput }) {
     suggestionsEl.innerHTML = '';
 
     try {
-      const data = await fetchMockSuggestionData();
+      const data = await fetchSuggestionData();
       if (!Array.isArray(data) || data.length === 0) {
         statusEl.textContent = 'No results found.';
         return;
@@ -358,7 +358,7 @@ export default async function decorate(block) {
     resultsContainer.innerHTML = 'Loading…';
 
     try {
-      const data = await fetchMockSearchData();
+      const data = await fetchSearchData();
       if (!Array.isArray(data) || data.length === 0) {
         resultsContainer.textContent = 'No results found.';
         return;

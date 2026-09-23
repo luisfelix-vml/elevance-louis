@@ -13,9 +13,8 @@
  */
 
 import { decorateIcons } from '../../scripts/aem.js';
-import { fetchMockFormsData } from '../../scripts/lookup-service/lookup-service.js';
+import { fetchFormsData } from '../../scripts/lookup-service/lookup-service.js';
 
-const FORMS_API_URL = 'https://provider.healthybluenc.com/sites/Satellite?d=Universal&pagename=getdocuments&brand=HBNC&state=&formslibrary=gpp_formslib';
 const DOC_BASE_URL = 'https://provider.healthybluenc.com';
 
 const ACCORDION_TOPICS = [
@@ -110,12 +109,7 @@ export default async function decorate(block) {
   block.append(list);
 
   try {
-    const data = useMock()
-      ? await fetchMockFormsData()
-      : await fetch(FORMS_API_URL).then((res) => {
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-        return res.json();
-      });
+    const data = await fetchFormsData();
     const docs = data?.AllDocs ?? [];
 
     list.textContent = '';
