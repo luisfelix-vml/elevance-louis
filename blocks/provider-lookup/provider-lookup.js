@@ -190,7 +190,7 @@ function wireDrugField(scopeEl, { onInput }) {
   }
 
   function selectSuggestion(item) {
-    const value = `${item.procedureCode}: ${item.description}`;
+    const value = `${item.procedureCode} ${item.description}`;
     codeInput.value = value;
     displayInput.value = value;
     suggestionsEl.innerHTML = '';
@@ -221,7 +221,8 @@ function wireDrugField(scopeEl, { onInput }) {
       suggestionsEl.innerHTML = data
         .map((item, index) => `
           <button type="button" class="search-suggestion" data-index="${index}">
-            ${item.procedureCode}: ${item.description}
+            <div class="suggestion-code">${item.procedureCode}</div>
+            <div class="suggestion-description">${item.description}</div>
           </button>
         `)
         .join('');
