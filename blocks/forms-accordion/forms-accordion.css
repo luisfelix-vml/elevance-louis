@@ -33,6 +33,11 @@ body.north-carolina .forms-accordion .forms-accordion-item-label::-webkit-detail
   display: none;
 }
 
+body.north-carolina .forms-accordion .forms-accordion-item-label::marker {
+  content: '';
+  display: none;
+}
+
 /* Toggle icon — fa-plus-circle / fa-minus-circle (blue disc, white glyph),
    swapped via the details[open] state; both icons are rendered and stacked,
    visibility toggled with CSS so no re-render is needed on click. */
