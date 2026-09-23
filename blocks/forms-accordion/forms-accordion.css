@@ -7,14 +7,6 @@
  * Every selector is scoped under body.north-carolina (repoless multi-site).
  */
 
-body.north-carolina .forms-accordion .forms-accordion-item {
-  border-bottom: 1px solid var(--brand-border);
-}
-
-body.north-carolina .forms-accordion .forms-accordion-item:first-child {
-  border-top: 1px solid var(--brand-border);
-}
-
 body.north-carolina .forms-accordion .forms-accordion-item-label {
   display: flex;
   align-items: center;
@@ -46,6 +38,7 @@ body.north-carolina .forms-accordion .forms-accordion-item-icon {
   flex: 0 0 auto;
   width: 1.25rem;
   height: 1.25rem;
+  margin-right: 1.5rem;
 }
 
 body.north-carolina .forms-accordion .forms-accordion-item-icon .icon {
