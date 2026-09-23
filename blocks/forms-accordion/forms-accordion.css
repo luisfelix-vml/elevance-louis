@@ -68,7 +68,7 @@ body.north-carolina .forms-accordion .forms-accordion-item-body {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 0.25rem 0 1.5rem 1.875rem;
+  padding: 1.4375rem 0 1.375rem 2rem;
 }
 
 /* Document links — small red file/PDF icon before the label, shared by the
