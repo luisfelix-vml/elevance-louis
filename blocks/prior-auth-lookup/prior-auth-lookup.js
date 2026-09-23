@@ -346,6 +346,16 @@ export default async function decorate(block) {
   const instructionsText = cellText(nameRow, 1);
   const searchText = cellText(searchRow, 0);
 
+  console.log('Block data: ', {
+    marketText,
+    marketValueText,
+    lobText,
+    lobListItems,
+    nameText,
+    instructionsText,
+    searchText,
+  });
+
   block.innerHTML = '';
   const formWrapper = renderForm({
     marketText,
