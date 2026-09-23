@@ -296,7 +296,11 @@ body.north-carolina .provider-lookup .search-loading {
 body.north-carolina .provider-lookup .search-suggestions:not(:empty) {
   max-height: 220px;
   overflow-y: auto;
-  border-top: 1px solid var(--brand-border);
+  margin-left: 15px;
+}
+
+body.north-carolina .provider-lookup .search-panel input#provider-lookup-code-1:focus {
+    background: #FFFFFF url(/dam/nc/images/search.svg) no-repeat 98% 5px;
 }
 
 body.north-carolina .provider-lookup .search-suggestion {
@@ -317,6 +321,7 @@ body.north-carolina .provider-lookup .search-suggestion {
   display: flex;
   flex-direction: row;
   white-space: normal;
+  border-top: 1px solid #0B76A1;
 }
 
 body.north-carolina .provider-lookup .search-suggestion .suggestion-code {
