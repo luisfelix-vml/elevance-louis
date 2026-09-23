@@ -190,7 +190,7 @@ function wireDrugField(scopeEl, { onInput }) {
   }
 
   function selectSuggestion(item) {
-    const value = `${item.procedureCode} ${item.description}`;
+    const value = `${item.procedureCode} - ${item.description}`;
     codeInput.value = value;
     displayInput.value = value;
     suggestionsEl.innerHTML = '';
