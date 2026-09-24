@@ -9,10 +9,12 @@
  *   - dynamically rendered results
  *
  * Authoring content model (key | value rows):
- *   | Markets                      | North Carolina                  | 
- *   | Line of Business             | Medicaid, CFSP                  |   (LOB options for that market; one row per market)
- *   | Drug name, CPT or HCPCS code | (typeahead input for searching) |   Add message for placeholder text
- *   | Search                       |                                 |   Search button text
+ *   | Markets              | North Carolina   |
+ *   | Line of Business     | Medicaid, CFSP   |  (LOB options for that market;
+ *                                                  one row per market)
+ *   | Drug name, CPT or    | (typeahead input |  Add message for
+ *      HCPCS code              for searching)      placeholder text
+ *   | Search               |                  |  Search button text
  * All rows are optional — the block renders a usable shell without them and
  * fetches/searches the dataset client-side when a Data Source is configured.
  *
@@ -22,7 +24,7 @@
 import {
   fetchSuggestionData,
   fetchSearchData,
-} from '../../scripts/lookup-service/lookup-service.js';
+} from '../../scripts/lookup-service.js';
 
 // blocks/prior-auth-lookup/prior-auth-lookup.js
 //
@@ -365,16 +367,6 @@ export default async function decorate(block) {
   const nameText = cellText(nameRow, 0);
   const instructionsText = cellText(nameRow, 1);
   const searchText = cellText(searchRow, 0);
-
-  console.log('Block data: ', {
-    marketText,
-    marketValueText,
-    lobText,
-    lobListItems,
-    nameText,
-    instructionsText,
-    searchText,
-  });
 
   block.innerHTML = '';
   const formWrapper = renderForm({

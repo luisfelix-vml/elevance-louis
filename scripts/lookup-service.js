@@ -6,9 +6,9 @@
  * in sync instead of duplicating fetch/error-handling code.
  */
 
-const MOCK_SUGGESTION_DATA_URL = '/scripts/lookup-service/mock-suggestion-data.json';
-const MOCK_SEARCH_DATA_URL = '/scripts/lookup-service/mock-search-data.json';
-const MOCK_FORMS_DATA_URL = '/scripts/lookup-service/mock-forms-response.json';
+const MOCK_SUGGESTION_DATA_URL = '/scripts/lookup-data/mock-suggestion-data.json';
+const MOCK_SEARCH_DATA_URL = '/scripts/lookup-data/mock-search-data.json';
+const MOCK_FORMS_DATA_URL = '/scripts/lookup-data/mock-forms-response.json';
 
 const FORMS_API_URL = 'https://provider.healthybluenc.com/sites/Satellite?d=Universal&pagename=getdocuments&brand=HBNC&state=&formslibrary=gpp_formslib';
 const SUGGESTION_API_URL = 'https://provider.healthybluenc.com/sites/Satellite?d=Universal&pagename=gbdPro/PlutoServiceProxy&service=cpt&state=NC&lobCode=CFSP&procCode=%250002M%25';
@@ -34,27 +34,33 @@ async function fetchMockJson(url) {
 
 // provider-lookup: typeahead suggestions for the procedure/drug input
 export function fetchSuggestionData() {
-  if (!useMock()) return fetch(SUGGESTION_API_URL).then(res => {
-    if (!res.ok) throw new Error(`Suggestion data failed to load: ${res.status}`);
-    return res.json();
-  });
+  if (!useMock()) {
+    return fetch(SUGGESTION_API_URL).then((res) => {
+      if (!res.ok) throw new Error(`Suggestion data failed to load: ${res.status}`);
+      return res.json();
+    });
+  }
   return fetchMockJson(MOCK_SUGGESTION_DATA_URL);
 }
 
 // provider-lookup: precertification search results
 export function fetchSearchData() {
-  if (!useMock()) return fetch(SEARCH_API_URL).then(res => {
-    if (!res.ok) throw new Error(`Search data failed to load: ${res.status}`);
-    return res.json();
-  });
+  if (!useMock()) {
+    return fetch(SEARCH_API_URL).then((res) => {
+      if (!res.ok) throw new Error(`Search data failed to load: ${res.status}`);
+      return res.json();
+    });
+  }
   return fetchMockJson(MOCK_SEARCH_DATA_URL);
 }
 
 // forms-accordion: GPP forms-library document list
 export function fetchFormsData() {
-  if (!useMock()) return fetch(FORMS_API_URL).then(res => {
-    if (!res.ok) throw new Error(`Forms data failed to load: ${res.status}`);
-    return res.json();
-  });
+  if (!useMock()) {
+    return fetch(FORMS_API_URL).then((res) => {
+      if (!res.ok) throw new Error(`Forms data failed to load: ${res.status}`);
+      return res.json();
+    });
+  }
   return fetchMockJson(MOCK_FORMS_DATA_URL);
 }

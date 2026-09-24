@@ -13,7 +13,7 @@
  */
 
 import { decorateIcons } from '../../scripts/aem.js';
-import { fetchFormsData } from '../../scripts/lookup-service/lookup-service.js';
+import { fetchFormsData } from '../../scripts/lookup-service.js';
 
 const DOC_BASE_URL = 'https://provider.healthybluenc.com';
 
